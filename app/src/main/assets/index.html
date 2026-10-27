@@ -1,0 +1,1277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Shri Krishna: Divine Army</title>
+  <style>
+    * {
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: none;
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body, html {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #090d16;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      color: #ffffff;
+    }
+    #canvas-container {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+    }
+    canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+    .hud-layer {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 10;
+      pointer-events: none;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 16px;
+      padding-bottom: 24px;
+    }
+    .interactive {
+      pointer-events: auto;
+    }
+    .top-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding-top: 8px;
+    }
+    .badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: linear-gradient(135deg, rgba(30, 58, 138, 0.9), rgba(22, 78, 99, 0.9));
+      backdrop-filter: blur(8px);
+      padding: 6px 14px;
+      border-radius: 16px;
+      border: 1px solid rgba(6, 182, 212, 0.5);
+      box-shadow: 0 4px 15px rgba(8, 51, 68, 0.5);
+    }
+    .badge-icon {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: #22d3ee;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #082f49;
+      font-weight: 900;
+      font-size: 12px;
+    }
+    .badge-label {
+      font-size: 11px;
+      color: #a5f3fc;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .badge-value {
+      font-size: 20px;
+      font-weight: 900;
+      color: #ffffff;
+      line-height: 1;
+    }
+    .progress-bar-container {
+      flex: 1;
+      max-width: 200px;
+      margin: 0 8px;
+    }
+    .progress-header {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      color: #fef08a;
+      font-weight: 600;
+      margin-bottom: 4px;
+      padding: 0 4px;
+    }
+    .progress-track {
+      width: 100%;
+      height: 12px;
+      background: rgba(0, 0, 0, 0.6);
+      border-radius: 9999px;
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      overflow: hidden;
+      padding: 2px;
+    }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #f59e0b, #fde047);
+      border-radius: 9999px;
+      width: 0%;
+      transition: width 0.1s linear;
+    }
+    .coins-badge {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(8px);
+      padding: 6px 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(245, 158, 11, 0.4);
+      font-weight: 700;
+      color: #fcd34d;
+      font-size: 14px;
+    }
+    .icon-btn {
+      width: 38px;
+      height: 38px;
+      border-radius: 12px;
+      background: rgba(30, 41, 59, 0.8);
+      border: 1px solid #475569;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    .icon-btn:active {
+      transform: scale(0.95);
+    }
+    .boss-bar-wrap {
+      width: 100%;
+      max-width: 380px;
+      margin: 8px auto 0;
+      background: rgba(69, 10, 10, 0.85);
+      backdrop-filter: blur(8px);
+      border-radius: 16px;
+      padding: 10px 14px;
+      border: 1px solid rgba(239, 68, 68, 0.6);
+      box-shadow: 0 4px 20px rgba(69, 10, 10, 0.6);
+    }
+    .boss-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+      font-size: 12px;
+    }
+    .boss-name {
+      font-weight: 800;
+      color: #fecaca;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+    .boss-hp-val {
+      font-weight: 700;
+      color: #fca5a5;
+    }
+    .boss-track {
+      width: 100%;
+      height: 14px;
+      background: rgba(0, 0, 0, 0.7);
+      border-radius: 9999px;
+      overflow: hidden;
+      padding: 2px;
+      border: 1px solid rgba(239, 68, 68, 0.4);
+    }
+    .boss-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #dc2626, #f59e0b);
+      border-radius: 9999px;
+      width: 100%;
+      transition: width 0.15s ease-out;
+    }
+    .bottom-bar {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+    }
+    .drag-prompt {
+      font-size: 12px;
+      color: rgba(165, 243, 252, 0.9);
+      background: rgba(0, 0, 0, 0.45);
+      backdrop-filter: blur(4px);
+      padding: 6px 12px;
+      border-radius: 8px;
+      border: 1px solid rgba(6, 182, 212, 0.25);
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 0.7; }
+      50% { opacity: 1; }
+    }
+    .chakra-btn {
+      position: relative;
+      width: 66px;
+      height: 66px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #d97706, #facc15, #fef08a);
+      padding: 4px;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 0 20px rgba(250, 204, 21, 0.6);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    .chakra-btn:active {
+      transform: scale(0.92);
+    }
+    .chakra-inner {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      background: linear-gradient(180deg, #172554, #1e1b4b);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+      border: 1px solid #fde047;
+    }
+    .chakra-spin {
+      animation: spin 1.2s linear infinite;
+      width: 38px;
+      height: 38px;
+    }
+    @keyframes spin {
+      100% { transform: rotate(360deg); }
+    }
+    .cooldown-mask {
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.75);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 14px;
+      color: #ffffff;
+    }
+    .chakra-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: #fde047;
+      margin-top: 4px;
+      letter-spacing: 0.5px;
+    }
+    .modal-overlay {
+      position: absolute;
+      inset: 0;
+      z-index: 40;
+      background: linear-gradient(180deg, rgba(15, 23, 42, 0.98), rgba(9, 13, 22, 0.99));
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      padding: 24px;
+    }
+    .modal-dialog {
+      width: 100%;
+      max-width: 340px;
+      background: linear-gradient(180deg, #1e1b4b, #0f172a);
+      border: 1px solid rgba(245, 158, 11, 0.6);
+      border-radius: 24px;
+      padding: 24px;
+      text-align: center;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
+      margin: auto;
+    }
+    .btn-primary {
+      width: 100%;
+      padding: 14px;
+      border-radius: 16px;
+      background: linear-gradient(90deg, #f59e0b, #eab308);
+      color: #0f172a;
+      font-weight: 900;
+      font-size: 16px;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+    .btn-primary:active {
+      transform: scale(0.96);
+    }
+    .btn-secondary {
+      width: 100%;
+      padding: 14px;
+      border-radius: 16px;
+      background: rgba(30, 41, 59, 0.8);
+      border: 1px solid #334155;
+      color: #cbd5e1;
+      font-weight: 700;
+      font-size: 14px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+    .btn-secondary:active {
+      transform: scale(0.96);
+    }
+    .hidden {
+      display: none !important;
+    }
+    #flashOverlay {
+      position: absolute;
+      inset: 0;
+      background: #f59e0b;
+      pointer-events: none;
+      opacity: 0;
+      z-index: 30;
+      transition: opacity 0.2s ease-out;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="canvas-container">
+    <canvas id="gameCanvas"></canvas>
+  </div>
+
+  <div id="flashOverlay"></div>
+
+  <!-- In-Game HUD -->
+  <div class="hud-layer">
+    <div class="top-bar">
+      <div class="badge interactive">
+        <div class="badge-icon">⚡</div>
+        <div>
+          <div class="badge-label">Divine Army</div>
+          <div id="soldierCountText" class="badge-value">10</div>
+        </div>
+      </div>
+
+      <div class="progress-bar-container">
+        <div class="progress-header">
+          <span id="levelNameBadge">Level 1: Desert</span>
+          <span id="progressPercentText">0%</span>
+        </div>
+        <div class="progress-track">
+          <div id="progressBarFill" class="progress-fill"></div>
+        </div>
+      </div>
+
+      <div style="display:flex; gap:8px;">
+        <div class="coins-badge interactive">
+          <span>🪙</span>
+          <span id="coinsText">0</span>
+        </div>
+        <button id="pauseBtn" class="icon-btn interactive">⏸</button>
+      </div>
+    </div>
+
+    <!-- Boss Health Bar -->
+    <div id="bossBarContainer" class="boss-bar-wrap hidden">
+      <div class="boss-header">
+        <span id="bossNameLabel" class="boss-name">👹 Asura Commander</span>
+        <span id="bossHpPercent" class="boss-hp-val">100%</span>
+      </div>
+      <div class="boss-track">
+        <div id="bossHpFill" class="boss-fill"></div>
+      </div>
+    </div>
+
+    <!-- Bottom Controls -->
+    <div class="bottom-bar">
+      <div id="dragPrompt" class="drag-prompt">
+        👈 Drag left/right to steer army 👉
+      </div>
+
+      <div class="interactive" style="display:flex; flex-direction:column; align-items:center;">
+        <button id="chakraAbilityBtn" class="chakra-btn">
+          <div class="chakra-inner">
+            <svg viewBox="0 0 100 100" class="chakra-spin">
+              <circle cx="50" cy="50" r="16" fill="#ffd700" />
+              <path d="M50 10 L55 35 L45 35 Z M50 90 L55 65 L45 65 Z M10 50 L35 55 L35 45 Z M90 50 L65 55 L65 45 Z M22 22 L40 37 L33 44 Z M78 78 L60 63 L67 56 Z M22 78 L37 60 L44 67 Z M78 22 L63 40 L56 33 Z" fill="#ffd700"/>
+            </svg>
+            <div id="chakraCooldownMask" class="cooldown-mask hidden">
+              <span id="chakraCooldownSecs">8s</span>
+            </div>
+          </div>
+        </button>
+        <span class="chakra-label">CHAKRA</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Menu Modal -->
+  <div id="mainMenuModal" class="modal-overlay">
+    <div style="text-align:center; margin-top:20px;">
+      <div style="display:inline-block; padding:4px 12px; background:rgba(245,158,11,0.2); border:1px solid rgba(245,158,11,0.4); border-radius:9999px; font-size:11px; font-weight:700; color:#fde047; text-transform:uppercase; letter-spacing:1px; margin-bottom:8px;">
+        Mythological Crowd Runner
+      </div>
+      <h1 style="font-size:32px; font-weight:900; background:linear-gradient(90deg, #fde047, #67e8f9); -webkit-background-clip:text; -webkit-text-fill-color:transparent;">
+        SHRI KRISHNA
+      </h1>
+      <h2 style="font-size:22px; font-weight:900; color:#38bdf8; letter-spacing:2px;">
+        DIVINE ARMY
+      </h2>
+      <p style="font-size:12px; color:#94a3b8; margin-top:6px; max-width:280px; margin-left:auto; margin-right:auto;">
+        Command the divine host, multiply through sacred gates, and conquer the Asuras!
+      </p>
+    </div>
+
+    <!-- Character Card -->
+    <div style="width:160px; height:160px; border-radius:24px; background:linear-gradient(135deg, rgba(6,182,212,0.3), rgba(245,158,11,0.2)); border:1px solid rgba(6,182,212,0.5); display:flex; flex-direction:column; align-items:center; justify-content:center; box-shadow:0 10px 30px rgba(0,0,0,0.5);">
+      <div style="font-size:52px;">🦚</div>
+      <div style="color:#38bdf8; font-weight:800; font-size:14px; margin-top:4px;">Lord Krishna</div>
+      <div style="color:#fde047; font-size:11px; font-weight:600;">Supreme Commander</div>
+    </div>
+
+    <!-- Level Select Buttons -->
+    <div style="width:100%; max-width:290px;">
+      <button id="level1Btn" class="btn-primary">
+        <span>Level 1: Desert Kingdom</span>
+        <span>⚔️ Play</span>
+      </button>
+      <button id="level2Btn" class="btn-secondary">
+        <span>Level 2: Forest of Trials</span>
+        <span id="level2LockBadge">🔒 Locked</span>
+      </button>
+      <button id="level3Btn" class="btn-secondary">
+        <span>Level 3: Mountain Fortress</span>
+        <span id="level3LockBadge">🔒 Locked</span>
+      </button>
+    </div>
+
+    <div style="font-size:11px; color:#64748b; padding-bottom:8px;">
+      Android ARM64 Native Offline Build
+    </div>
+  </div>
+
+  <!-- Victory Modal -->
+  <div id="victoryModal" class="modal-overlay hidden" style="justify-content:center; background:rgba(0,0,0,0.85); backdrop-filter:blur(8px);">
+    <div class="modal-dialog">
+      <div style="font-size:48px; margin-bottom:8px;">🏆</div>
+      <h2 style="font-size:24px; font-weight:900; color:#fde047;">DIVINE VICTORY!</h2>
+      <p style="font-size:12px; color:#a5f3fc; margin-top:4px;">The Asura Commander was vanquished by your divine army!</p>
+
+      <div style="margin:20px 0; padding:14px; background:rgba(15,23,42,0.8); border:1px solid #334155; border-radius:16px;">
+        <div style="display:flex; justify-content:space-between; font-size:14px; margin-bottom:8px;">
+          <span style="color:#94a3b8;">Army Survivors:</span>
+          <span id="victoryArmyCount" style="color:#38bdf8; font-weight:800;">42</span>
+        </div>
+        <div style="display:flex; justify-content:space-between; font-size:14px;">
+          <span style="color:#94a3b8;">Coins Earned:</span>
+          <span id="victoryCoinsReward" style="color:#fde047; font-weight:800;">+50 🪙</span>
+        </div>
+      </div>
+
+      <button id="nextLevelBtn" class="btn-primary" style="justify-content:center;">
+        Next Realm ➔
+      </button>
+      <button id="victoryReplayBtn" class="btn-secondary" style="justify-content:center;">
+        Replay Level
+      </button>
+    </div>
+  </div>
+
+  <!-- Defeat Modal -->
+  <div id="defeatModal" class="modal-overlay hidden" style="justify-content:center; background:rgba(0,0,0,0.85); backdrop-filter:blur(8px);">
+    <div class="modal-dialog" style="border-color:rgba(239,68,68,0.6); background:linear-gradient(180deg, #450a0a, #0f172a);">
+      <div style="font-size:48px; margin-bottom:8px;">⚔️</div>
+      <h2 style="font-size:24px; font-weight:900; color:#f87171;">ARMY OVERWHELMED</h2>
+      <p style="font-size:12px; color:#fca5a5; margin-top:4px;">Your forces were scattered by the demonic horde.</p>
+
+      <div style="margin:16px 0; padding:12px; background:rgba(0,0,0,0.5); border:1px solid rgba(185,28,28,0.4); border-radius:12px; font-size:11px; color:#fef08a;">
+        💡 Prioritize multiplier gates (×3, ×5) and activate Sudarshan Chakra against dense asura squads!
+      </div>
+
+      <button id="defeatRetryBtn" class="btn-primary" style="background:linear-gradient(90deg, #dc2626, #ea580c); color:#ffffff; justify-content:center;">
+        Retry Battle 🔄
+      </button>
+      <button id="defeatMenuBtn" class="btn-secondary" style="justify-content:center;">
+        Return to Menu
+      </button>
+    </div>
+  </div>
+
+  <script>
+    // --- Audio Synthesizer (Section 22) ---
+    class SoundEngine {
+      constructor() {
+        this.ctx = null;
+        this.masterVolume = 1.0;
+        this.musicOsc = null;
+        this.init();
+      }
+
+      init() {
+        try {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          if (AudioContext) this.ctx = new AudioContext();
+        } catch (e) {}
+      }
+
+      ensureContext() {
+        if (this.ctx && this.ctx.state === 'suspended') {
+          this.ctx.resume();
+        }
+      }
+
+      playGateSound(type, value) {
+        if (!this.ctx) return;
+        this.ensureContext();
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+
+        let baseFreq = 440;
+        if (type === 'mult') {
+          baseFreq = 440 * (1 + value * 0.18);
+          osc.type = 'triangle';
+        } else if (type === 'add') {
+          baseFreq = 523.25 + (value * 12);
+          osc.type = 'sine';
+        } else {
+          baseFreq = 220;
+          osc.type = 'sawtooth';
+        }
+
+        osc.frequency.setValueAtTime(baseFreq, now);
+        osc.frequency.exponentialRampToValueAtTime(baseFreq * 1.5, now + 0.18);
+        gain.gain.setValueAtTime(0.35, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.28);
+
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.3);
+      }
+
+      playChakraSound() {
+        if (!this.ctx) return;
+        this.ensureContext();
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(320, now);
+        osc.frequency.linearRampToValueAtTime(880, now + 0.3);
+        osc.frequency.linearRampToValueAtTime(440, now + 0.8);
+        gain.gain.setValueAtTime(0.4, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.85);
+
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.9);
+      }
+
+      playImpactSound() {
+        if (!this.ctx) return;
+        this.ensureContext();
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(150, now);
+        osc.frequency.exponentialRampToValueAtTime(40, now + 0.15);
+        gain.gain.setValueAtTime(0.5, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.22);
+      }
+
+      playBossRoar() {
+        if (!this.ctx) return;
+        this.ensureContext();
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(110, now);
+        osc.frequency.linearRampToValueAtTime(75, now + 0.6);
+        gain.gain.setValueAtTime(0.6, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.7);
+
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.75);
+      }
+
+      startCelestialDrone() {
+        if (!this.ctx || this.musicOsc) return;
+        this.ensureContext();
+        const now = this.ctx.currentTime;
+        this.musicOsc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+
+        this.musicOsc.type = 'triangle';
+        this.musicOsc.frequency.setValueAtTime(146.83, now); // D3 chord
+        gain.gain.setValueAtTime(0.05, now);
+
+        this.musicOsc.connect(gain);
+        gain.connect(this.ctx.destination);
+        this.musicOsc.start(now);
+      }
+
+      stopCelestialDrone() {
+        if (this.musicOsc) {
+          try {
+            this.musicOsc.stop();
+            this.musicOsc.disconnect();
+          } catch(e) {}
+          this.musicOsc = null;
+        }
+      }
+    }
+
+    const sound = new SoundEngine();
+
+    // --- Save System ---
+    const SaveState = {
+      highestUnlocked: 1,
+      coins: 0,
+      load() {
+        try {
+          const raw = localStorage.getItem('krishna_army_save');
+          if (raw) {
+            const data = JSON.parse(raw);
+            this.highestUnlocked = data.highestUnlocked || 1;
+            this.coins = data.coins || 0;
+          }
+        } catch(e) {}
+      },
+      save() {
+        try {
+          localStorage.setItem('krishna_army_save', JSON.stringify({
+            highestUnlocked: this.highestUnlocked,
+            coins: this.coins
+          }));
+        } catch(e) {}
+      }
+    };
+    SaveState.load();
+
+    // --- 3D Levels ---
+    const Levels = [
+      {
+        id: 1,
+        name: "Ancient Desert Kingdom",
+        length: 160,
+        startCrowd: 10,
+        groundColor: '#b58b4c',
+        trackColor: '#e0c083',
+        fogColor: '#42280d',
+        gates: [
+          { z: 25, left: { type: 'add', val: 5 }, right: { type: 'mult', val: 2 }, activated: false },
+          { z: 55, left: { type: 'mult', val: 3 }, right: { type: 'add', val: 10 }, activated: false },
+          { z: 90, left: { type: 'pen', val: 5 }, right: { type: 'mult', val: 4 }, activated: false },
+          { z: 125, left: { type: 'mult', val: 5 }, right: { type: 'add', val: 20 }, activated: false }
+        ],
+        enemies: [
+          { z: 40, count: 6, hp: 12, maxHp: 12, type: 'rakshasa' },
+          { z: 75, count: 12, hp: 15, maxHp: 15, type: 'rakshasa' },
+          { z: 110, count: 8, hp: 30, maxHp: 30, type: 'asura' }
+        ],
+        boss: { name: "Desert Asura Commander", hp: 350, maxHp: 350, reward: 50, color: '#e65c00' }
+      },
+      {
+        id: 2,
+        name: "Forest of Divine Trials",
+        length: 200,
+        startCrowd: 12,
+        groundColor: '#1c4524',
+        trackColor: '#3c7546',
+        fogColor: '#0a2110',
+        gates: [
+          { z: 30, left: { type: 'mult', val: 2 }, right: { type: 'add', val: 8 }, activated: false },
+          { z: 70, left: { type: 'pen', val: 8 }, right: { type: 'mult', val: 3 }, activated: false },
+          { z: 115, left: { type: 'mult', val: 4 }, right: { type: 'add', val: 15 }, activated: false },
+          { z: 155, left: { type: 'mult', val: 5 }, right: { type: 'add', val: 25 }, activated: false }
+        ],
+        enemies: [
+          { z: 50, count: 10, hp: 16, maxHp: 16, type: 'rakshasa' },
+          { z: 95, count: 14, hp: 28, maxHp: 28, type: 'asura' },
+          { z: 135, count: 10, hp: 45, maxHp: 45, type: 'elite' }
+        ],
+        boss: { name: "Armored Demon King", hp: 600, maxHp: 600, reward: 100, color: '#880e4f' }
+      },
+      {
+        id: 3,
+        name: "Mountain Fortress",
+        length: 240,
+        startCrowd: 15,
+        groundColor: '#37474f',
+        trackColor: '#546e7a',
+        fogColor: '#1a2327',
+        gates: [
+          { z: 35, left: { type: 'mult', val: 3 }, right: { type: 'add', val: 12 }, activated: false },
+          { z: 80, left: { type: 'add', val: 20 }, right: { type: 'mult', val: 4 }, activated: false },
+          { z: 130, left: { type: 'pen', val: 15 }, right: { type: 'mult', val: 5 }, activated: false },
+          { z: 180, left: { type: 'mult', val: 10 }, right: { type: 'add', val: 30 }, activated: false }
+        ],
+        enemies: [
+          { z: 60, count: 14, hp: 20, maxHp: 20, type: 'rakshasa' },
+          { z: 105, count: 16, hp: 35, maxHp: 35, type: 'asura' },
+          { z: 155, count: 12, hp: 60, maxHp: 60, type: 'elite' }
+        ],
+        boss: { name: "Volcanic Fire Guardian", hp: 950, maxHp: 950, reward: 200, color: '#d50000' }
+      }
+    ];
+
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    let screenWidth = 0;
+    let screenHeight = 0;
+
+    function resizeCanvas() {
+      screenWidth = canvas.width = window.innerWidth;
+      screenHeight = canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    let currentLevel = null;
+    let gameState = 'MENU';
+    let playerX = 0;
+    let playerZ = 0;
+    let forwardSpeed = 16.0;
+    let crowdCount = 10;
+    let bossCurrentHp = 0;
+    let bossMaxHp = 0;
+    let chakraCooldownTimer = 0;
+    const CHAKRA_COOLDOWN = 10.0;
+    let activeChakra = null;
+    let lastTime = performance.now();
+
+    let isDragging = false;
+    let lastTouchX = 0;
+
+    function handlePointerDown(e) {
+      if (gameState !== 'RUNNING' && gameState !== 'BOSS') return;
+      isDragging = true;
+      lastTouchX = e.clientX || (e.touches && e.touches[0].clientX);
+      sound.ensureContext();
+      sound.startCelestialDrone();
+    }
+
+    function handlePointerMove(e) {
+      if (!isDragging) return;
+      const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+      const deltaX = (clientX - lastTouchX) / screenWidth;
+      playerX += deltaX * 2.8;
+      playerX = Math.max(-0.85, Math.min(0.85, playerX));
+      lastTouchX = clientX;
+    }
+
+    function handlePointerUp() {
+      isDragging = false;
+    }
+
+    window.addEventListener('mousedown', handlePointerDown);
+    window.addEventListener('mousemove', handlePointerMove);
+    window.addEventListener('mouseup', handlePointerUp);
+    window.addEventListener('touchstart', handlePointerDown, { passive: true });
+    window.addEventListener('touchmove', handlePointerMove, { passive: true });
+    window.addEventListener('touchend', handlePointerUp, { passive: true });
+
+    function project(x, y, z) {
+      const relZ = z - playerZ;
+      if (relZ <= 0.2) return null;
+
+      const fov = 400;
+      const scale = fov / (relZ + 10);
+      const screenX = screenWidth / 2 + (x * 45) * scale;
+      const screenY = screenHeight * 0.65 - ((y - 1.2) * 45) * scale;
+
+      return { x: screenX, y: screenY, scale: scale, relZ: relZ };
+    }
+
+    function startLevel(lvlIndex) {
+      const blueprint = Levels[lvlIndex - 1] || Levels[0];
+      currentLevel = JSON.parse(JSON.stringify(blueprint));
+      playerZ = 0;
+      playerX = 0;
+      crowdCount = currentLevel.startCrowd;
+      bossMaxHp = currentLevel.boss.maxHp;
+      bossCurrentHp = bossMaxHp;
+      chakraCooldownTimer = 0;
+      activeChakra = null;
+
+      gameState = 'RUNNING';
+      document.getElementById('mainMenuModal').classList.add('hidden');
+      document.getElementById('victoryModal').classList.add('hidden');
+      document.getElementById('defeatModal').classList.add('hidden');
+      document.getElementById('bossBarContainer').classList.add('hidden');
+      document.getElementById('levelNameBadge').innerText = currentLevel.name;
+      document.getElementById('coinsText').innerText = SaveState.coins;
+
+      sound.ensureContext();
+      sound.startCelestialDrone();
+    }
+
+    function activateSudarshanChakra() {
+      if (chakraCooldownTimer > 0 || (gameState !== 'RUNNING' && gameState !== 'BOSS')) return;
+
+      chakraCooldownTimer = CHAKRA_COOLDOWN;
+      activeChakra = {
+        z: playerZ + 2,
+        x: playerX,
+        speed: 38.0,
+        active: true
+      };
+
+      sound.playChakraSound();
+
+      const flash = document.getElementById('flashOverlay');
+      flash.style.opacity = '0.4';
+      setTimeout(() => { flash.style.opacity = '0'; }, 200);
+
+      if (navigator.vibrate) navigator.vibrate([40, 60, 80]);
+    }
+
+    document.getElementById('chakraAbilityBtn').addEventListener('click', activateSudarshanChakra);
+
+    function gameLoop(now) {
+      requestAnimationFrame(gameLoop);
+
+      const dt = Math.min((now - lastTime) / 1000, 0.1);
+      lastTime = now;
+
+      if (gameState === 'RUNNING') {
+        playerZ += forwardSpeed * dt;
+
+        const progress = Math.min(1, playerZ / currentLevel.length);
+        document.getElementById('progressBarFill').style.width = (progress * 100) + '%';
+        document.getElementById('progressPercentText').innerText = Math.floor(progress * 100) + '%';
+
+        for (const gate of currentLevel.gates) {
+          if (!gate.activated && playerZ >= gate.z - 1.5 && playerZ <= gate.z + 2.5) {
+            gate.activated = true;
+            const chosen = playerX < 0 ? gate.left : gate.right;
+            if (chosen.type === 'mult') {
+              crowdCount = Math.floor(crowdCount * chosen.val);
+            } else if (chosen.type === 'add') {
+              crowdCount += chosen.val;
+            } else if (chosen.type === 'pen') {
+              crowdCount = Math.max(0, crowdCount - chosen.val);
+            }
+
+            sound.playGateSound(chosen.type, chosen.val);
+            if (navigator.vibrate) navigator.vibrate(50);
+
+            if (crowdCount <= 0) triggerDefeat();
+          }
+        }
+
+        for (const squad of currentLevel.enemies) {
+          if (squad.count > 0 && Math.abs(playerZ - squad.z) < 2.5) {
+            const damage = crowdCount * 12 * dt;
+            squad.hp -= damage;
+            if (squad.hp <= 0) {
+              squad.count = 0;
+              SaveState.coins += 5;
+              document.getElementById('coinsText').innerText = SaveState.coins;
+              sound.playImpactSound();
+            } else {
+              const lost = Math.floor(dt * 6);
+              crowdCount = Math.max(0, crowdCount - lost);
+              if (crowdCount <= 0) triggerDefeat();
+            }
+          }
+        }
+
+        if (playerZ >= currentLevel.length) {
+          gameState = 'BOSS';
+          sound.playBossRoar();
+          document.getElementById('bossBarContainer').classList.remove('hidden');
+          document.getElementById('bossNameLabel').innerText = `👹 ${currentLevel.boss.name}`;
+        }
+      } else if (gameState === 'BOSS') {
+        const armyDps = crowdCount * 14 * dt;
+        bossCurrentHp -= armyDps;
+        bossCurrentHp = Math.max(0, bossCurrentHp);
+
+        const bossHpPct = Math.floor((bossCurrentHp / bossMaxHp) * 100);
+        document.getElementById('bossHpFill').style.width = bossHpPct + '%';
+        document.getElementById('bossHpPercent').innerText = bossHpPct + '%';
+
+        crowdCount -= Math.floor(dt * 4);
+        crowdCount = Math.max(0, crowdCount);
+
+        if (bossCurrentHp <= 0) {
+          triggerVictory();
+        } else if (crowdCount <= 0) {
+          triggerDefeat();
+        }
+      }
+
+      if (activeChakra && activeChakra.active) {
+        activeChakra.z += activeChakra.speed * dt;
+
+        if (currentLevel) {
+          for (const squad of currentLevel.enemies) {
+            if (squad.count > 0 && Math.abs(activeChakra.z - squad.z) < 4) {
+              squad.hp -= 150;
+              if (squad.hp <= 0) {
+                squad.count = 0;
+                SaveState.coins += 8;
+                document.getElementById('coinsText').innerText = SaveState.coins;
+              }
+            }
+          }
+
+          if (gameState === 'BOSS' && activeChakra.z >= currentLevel.length + 5) {
+            bossCurrentHp -= 120;
+            sound.playImpactSound();
+            activeChakra.active = false;
+          }
+        }
+
+        if (activeChakra.z > playerZ + 80) activeChakra.active = false;
+      }
+
+      if (chakraCooldownTimer > 0) {
+        chakraCooldownTimer -= dt;
+        document.getElementById('chakraCooldownMask').classList.remove('hidden');
+        document.getElementById('chakraCooldownSecs').innerText = Math.ceil(chakraCooldownTimer) + 's';
+      } else {
+        document.getElementById('chakraCooldownMask').classList.add('hidden');
+      }
+
+      document.getElementById('soldierCountText').innerText = crowdCount;
+      renderScene();
+    }
+
+    function triggerVictory() {
+      gameState = 'VICTORY';
+      sound.stopCelestialDrone();
+      SaveState.coins += currentLevel.boss.reward;
+      if (currentLevel.id >= SaveState.highestUnlocked && SaveState.highestUnlocked < 3) {
+        SaveState.highestUnlocked = currentLevel.id + 1;
+      }
+      SaveState.save();
+
+      document.getElementById('victoryArmyCount').innerText = crowdCount;
+      document.getElementById('victoryCoinsReward').innerText = `+${currentLevel.boss.reward} 🪙`;
+      document.getElementById('victoryModal').classList.remove('hidden');
+      document.getElementById('coinsText').innerText = SaveState.coins;
+      updateMenuButtons();
+    }
+
+    function triggerDefeat() {
+      gameState = 'DEFEAT';
+      sound.stopCelestialDrone();
+      document.getElementById('defeatModal').classList.remove('hidden');
+    }
+
+    function renderScene() {
+      ctx.clearRect(0, 0, screenWidth, screenHeight);
+
+      if (!currentLevel) {
+        ctx.fillStyle = '#090d16';
+        ctx.fillRect(0, 0, screenWidth, screenHeight);
+        return;
+      }
+
+      const skyGrad = ctx.createLinearGradient(0, 0, 0, screenHeight * 0.65);
+      skyGrad.addColorStop(0, '#0a192f');
+      skyGrad.addColorStop(1, currentLevel.fogColor);
+      ctx.fillStyle = skyGrad;
+      ctx.fillRect(0, 0, screenWidth, screenHeight * 0.65);
+
+      ctx.fillStyle = currentLevel.groundColor;
+      ctx.fillRect(0, screenHeight * 0.65, screenWidth, screenHeight * 0.35);
+
+      const trackWidth = 3.8;
+      const roadSteps = 30;
+      for (let i = 0; i < roadSteps; i++) {
+        const z1 = playerZ + i * 3.5;
+        const z2 = z1 + 3.5;
+
+        const p1L = project(-trackWidth, 0, z1);
+        const p1R = project(trackWidth, 0, z1);
+        const p2L = project(-trackWidth, 0, z2);
+        const p2R = project(trackWidth, 0, z2);
+
+        if (p1L && p1R && p2L && p2R) {
+          ctx.beginPath();
+          ctx.moveTo(p1L.x, p1L.y);
+          ctx.lineTo(p1R.x, p1R.y);
+          ctx.lineTo(p2R.x, p2R.y);
+          ctx.lineTo(p2L.x, p2L.y);
+          ctx.closePath();
+
+          ctx.fillStyle = (i % 2 === 0) ? currentLevel.trackColor : '#d1b275';
+          ctx.fill();
+
+          const p1M = project(0, 0, z1);
+          const p2M = project(0, 0, z2);
+          if (p1M && p2M && i % 2 === 0) {
+            ctx.beginPath();
+            ctx.moveTo(p1M.x, p1M.y);
+            ctx.lineTo(p2M.x, p2M.y);
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+            ctx.lineWidth = 2 * p1M.scale;
+            ctx.stroke();
+          }
+        }
+      }
+
+      for (const gate of currentLevel.gates) {
+        if (gate.z > playerZ - 2 && gate.z < playerZ + 75) renderGateRow(gate);
+      }
+
+      for (const squad of currentLevel.enemies) {
+        if (squad.count > 0 && squad.z > playerZ - 2 && squad.z < playerZ + 75) renderEnemySquad(squad);
+      }
+
+      if (playerZ >= currentLevel.length - 25) renderBoss();
+
+      if (activeChakra && activeChakra.active) renderChakraProjectile(activeChakra);
+
+      renderDivineArmy();
+    }
+
+    function renderGateRow(gate) {
+      const z = gate.z;
+      const leftGateCenter = project(-1.8, 1.5, z);
+      const rightGateCenter = project(1.8, 1.5, z);
+      const gateCenter = project(0, 0, z);
+      if (!gateCenter) return;
+
+      const scale = gateCenter.scale;
+      const gateW = 75 * scale;
+      const gateH = 90 * scale;
+
+      drawGateArch(leftGateCenter, gate.left, gateW, gateH, gate.activated);
+      drawGateArch(rightGateCenter, gate.right, gateW, gateH, gate.activated);
+    }
+
+    function drawGateArch(pos, data, w, h, activated) {
+      if (!pos) return;
+
+      ctx.save();
+      ctx.translate(pos.x, pos.y);
+
+      let gateColor = data.type === 'mult' ? '#ffb300' : (data.type === 'add' ? '#00e5ff' : '#ff1744');
+      if (activated) gateColor = 'rgba(100, 100, 100, 0.4)';
+
+      ctx.fillStyle = gateColor;
+      ctx.globalAlpha = activated ? 0.3 : 0.75;
+      ctx.fillRect(-w/2, -h/2, w, h);
+
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 3;
+      ctx.strokeRect(-w/2, -h/2, w, h);
+
+      ctx.fillStyle = '#ffffff';
+      ctx.font = `bold ${Math.max(12, Math.floor(22 * pos.scale))}px system-ui`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      const label = data.type === 'mult' ? `×${data.val}` : (data.type === 'add' ? `+${data.val}` : `-${data.val}`);
+      ctx.fillText(label, 0, 0);
+
+      ctx.restore();
+    }
+
+    function renderDivineArmy() {
+      const krishnaPos = project(playerX * 3.0, 0.4, playerZ + 2.5);
+      if (krishnaPos) drawKrishna(krishnaPos.x, krishnaPos.y, krishnaPos.scale);
+
+      const count = Math.min(crowdCount, 120);
+      const goldenAngle = 2.39996;
+      for (let i = 0; i < count; i++) {
+        const radius = 0.28 * Math.sqrt(i);
+        const angle = i * goldenAngle;
+        const offsetX = radius * Math.cos(angle) + (playerX * 3.0);
+        const offsetZ = -radius * Math.sin(angle) + playerZ + 1.2;
+
+        const pos = project(offsetX, 0.25, offsetZ);
+        if (pos) drawSoldier(pos.x, pos.y, pos.scale);
+      }
+    }
+
+    function drawKrishna(x, y, scale) {
+      const r = Math.max(7, 14 * scale);
+      ctx.save();
+      ctx.translate(x, y);
+
+      ctx.beginPath();
+      ctx.arc(0, -r * 1.2, r * 1.5, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(255, 215, 0, 0.35)';
+      ctx.fill();
+
+      ctx.beginPath();
+      ctx.arc(0, r * 0.4, r * 0.9, 0, Math.PI);
+      ctx.fillStyle = '#ffd700';
+      ctx.fill();
+
+      ctx.beginPath();
+      ctx.arc(0, -r * 0.5, r * 0.7, 0, Math.PI * 2);
+      ctx.fillStyle = '#1e88e5';
+      ctx.fill();
+
+      ctx.fillStyle = '#ffb300';
+      ctx.fillRect(-r * 0.5, -r * 1.5, r, r * 0.5);
+      ctx.beginPath();
+      ctx.arc(0, -r * 1.8, r * 0.4, 0, Math.PI * 2);
+      ctx.fillStyle = '#00e676';
+      ctx.fill();
+
+      ctx.restore();
+    }
+
+    function drawSoldier(x, y, scale) {
+      const r = Math.max(3, 7 * scale);
+      ctx.beginPath();
+      ctx.arc(x, y, r, 0, Math.PI * 2);
+      ctx.fillStyle = '#29b6f6';
+      ctx.fill();
+      ctx.strokeStyle = '#0288d1';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    }
+
+    function renderEnemySquad(squad) {
+      for (let i = 0; i < squad.count; i++) {
+        const xOffset = ((i % 4) - 1.5) * 1.4;
+        const zOffset = squad.z + Math.floor(i / 4) * 1.6;
+
+        const pos = project(xOffset, 0.3, zOffset);
+        if (pos) {
+          const r = Math.max(4, 9 * pos.scale);
+          ctx.beginPath();
+          ctx.arc(pos.x, pos.y, r, 0, Math.PI * 2);
+          ctx.fillStyle = (squad.type === 'asura') ? '#880e4f' : '#b71c1c';
+          ctx.fill();
+
+          ctx.fillStyle = '#ff8f00';
+          ctx.fillRect(pos.x - r * 0.6, pos.y - r * 1.2, r * 0.3, r * 0.5);
+          ctx.fillRect(pos.x + r * 0.3, pos.y - r * 1.2, r * 0.3, r * 0.5);
+        }
+      }
+    }
+
+    function renderBoss() {
+      const bossZ = currentLevel.length + 10;
+      const pos = project(0, 1.8, bossZ);
+      if (!pos) return;
+
+      const scale = pos.scale;
+      const w = 90 * scale;
+      const h = 130 * scale;
+
+      ctx.save();
+      ctx.translate(pos.x, pos.y);
+
+      ctx.fillStyle = currentLevel.boss.color;
+      ctx.beginPath();
+      ctx.ellipse(0, 0, w/2, h/2, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = '#ffeb3b';
+      ctx.beginPath();
+      ctx.arc(-w * 0.2, -h * 0.2, 5 * scale, 0, Math.PI * 2);
+      ctx.arc(w * 0.2, -h * 0.2, 5 * scale, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.restore();
+    }
+
+    function renderChakraProjectile(chakra) {
+      const pos = project(chakra.x * 3.0, 0.6, chakra.z);
+      if (!pos) return;
+
+      const r = Math.max(8, 25 * pos.scale);
+      ctx.save();
+      ctx.translate(pos.x, pos.y);
+      ctx.rotate(Date.now() * 0.02);
+
+      ctx.beginPath();
+      ctx.arc(0, 0, r, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(255, 215, 0, 0.85)';
+      ctx.fill();
+      ctx.strokeStyle = '#fff';
+      ctx.lineWidth = 3;
+      ctx.stroke();
+
+      ctx.restore();
+    }
+
+    function updateMenuButtons() {
+      const l2 = document.getElementById('level2Btn');
+      const l3 = document.getElementById('level3Btn');
+      const l2Badge = document.getElementById('level2LockBadge');
+      const l3Badge = document.getElementById('level3LockBadge');
+
+      if (SaveState.highestUnlocked >= 2) {
+        l2.style.background = 'linear-gradient(90deg, #059669, #0d9488)';
+        l2.style.color = '#ffffff';
+        l2Badge.innerText = '⚔️ Play';
+      }
+      if (SaveState.highestUnlocked >= 3) {
+        l3.style.background = 'linear-gradient(90deg, #7c3aed, #4f46e5)';
+        l3.style.color = '#ffffff';
+        l3Badge.innerText = '⚔️ Play';
+      }
+    }
+    updateMenuButtons();
+
+    document.getElementById('level1Btn').addEventListener('click', () => startLevel(1));
+    document.getElementById('level2Btn').addEventListener('click', () => {
+      if (SaveState.highestUnlocked >= 2) startLevel(2);
+    });
+    document.getElementById('level3Btn').addEventListener('click', () => {
+      if (SaveState.highestUnlocked >= 3) startLevel(3);
+    });
+
+    document.getElementById('nextLevelBtn').addEventListener('click', () => {
+      if (currentLevel.id < 3) startLevel(currentLevel.id + 1);
+      else startLevel(1);
+    });
+    document.getElementById('victoryReplayBtn').addEventListener('click', () => startLevel(currentLevel.id));
+    document.getElementById('defeatRetryBtn').addEventListener('click', () => startLevel(currentLevel.id));
+    document.getElementById('defeatMenuBtn').addEventListener('click', () => {
+      document.getElementById('defeatModal').classList.add('hidden');
+      document.getElementById('mainMenuModal').classList.remove('hidden');
+      gameState = 'MENU';
+    });
+
+    document.getElementById('pauseBtn').addEventListener('click', () => {
+      if (gameState === 'RUNNING' || gameState === 'BOSS') {
+        gameState = 'PAUSED';
+        sound.stopCelestialDrone();
+        alert("Game Paused. Tap OK to resume.");
+        gameState = 'RUNNING';
+        sound.startCelestialDrone();
+      }
+    });
+
+    requestAnimationFrame(gameLoop);
+  </script>
+</body>
+</html>
