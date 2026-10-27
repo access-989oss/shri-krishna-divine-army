@@ -2,8 +2,9 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>Shri Krishna: Divine Army</title>
+  <script src="three.min.js"></script>
   <style>
     * {
       user-select: none;
@@ -17,9 +18,8 @@
       width: 100%;
       height: 100%;
       overflow: hidden;
-      background: #090d16;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      color: #ffffff;
+      background: #e8a85c;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     }
     #canvas-container {
       position: absolute;
@@ -46,7 +46,8 @@
       flex-direction: column;
       justify-content: space-between;
       padding: 16px;
-      padding-bottom: 24px;
+      padding-top: max(16px, env(safe-area-inset-top));
+      padding-bottom: max(20px, env(safe-area-inset-bottom));
     }
     .interactive {
       pointer-events: auto;
@@ -55,179 +56,123 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 12px;
-      padding-top: 8px;
+      gap: 10px;
     }
-    .badge {
+    .card-badge {
       display: flex;
       align-items: center;
       gap: 8px;
-      background: linear-gradient(135deg, rgba(30, 58, 138, 0.9), rgba(22, 78, 99, 0.9));
+      background: rgba(15, 23, 42, 0.85);
       backdrop-filter: blur(8px);
-      padding: 6px 14px;
+      padding: 8px 14px;
       border-radius: 16px;
-      border: 1px solid rgba(6, 182, 212, 0.5);
-      box-shadow: 0 4px 15px rgba(8, 51, 68, 0.5);
+      border: 1.5px solid rgba(56, 189, 248, 0.6);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
     }
     .badge-icon {
-      width: 24px;
-      height: 24px;
+      width: 26px;
+      height: 26px;
       border-radius: 50%;
-      background: #22d3ee;
+      background: #0284c7;
       display: flex;
       align-items: center;
       justify-content: center;
-      color: #082f49;
+      color: #fff;
       font-weight: 900;
-      font-size: 12px;
+      font-size: 13px;
+    }
+    .badge-text {
+      display: flex;
+      flex-direction: column;
     }
     .badge-label {
-      font-size: 11px;
-      color: #a5f3fc;
-      font-weight: 600;
+      font-size: 10px;
+      color: #94a3b8;
+      font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.5px;
     }
-    .badge-value {
-      font-size: 20px;
+    .badge-val {
+      font-size: 18px;
       font-weight: 900;
-      color: #ffffff;
+      color: #38bdf8;
       line-height: 1;
     }
-    .progress-bar-container {
+    .level-progress-box {
       flex: 1;
-      max-width: 200px;
-      margin: 0 8px;
+      max-width: 180px;
+      background: rgba(15, 23, 42, 0.8);
+      backdrop-filter: blur(8px);
+      border-radius: 16px;
+      padding: 6px 12px;
+      border: 1.5px solid rgba(245, 158, 11, 0.5);
     }
-    .progress-header {
+    .progress-txt {
       display: flex;
       justify-content: space-between;
       font-size: 11px;
-      color: #fef08a;
-      font-weight: 600;
-      margin-bottom: 4px;
-      padding: 0 4px;
+      font-weight: 800;
+      color: #fde047;
+      margin-bottom: 3px;
     }
     .progress-track {
       width: 100%;
-      height: 12px;
-      background: rgba(0, 0, 0, 0.6);
+      height: 8px;
+      background: rgba(0, 0, 0, 0.5);
       border-radius: 9999px;
-      border: 1px solid rgba(245, 158, 11, 0.3);
       overflow: hidden;
-      padding: 2px;
     }
     .progress-fill {
       height: 100%;
-      background: linear-gradient(90deg, #f59e0b, #fde047);
-      border-radius: 9999px;
+      background: linear-gradient(90deg, #f59e0b, #eab308);
       width: 0%;
+      border-radius: 9999px;
       transition: width 0.1s linear;
     }
-    .coins-badge {
+    .coins-box {
       display: flex;
       align-items: center;
       gap: 6px;
-      background: rgba(0, 0, 0, 0.6);
+      background: rgba(15, 23, 42, 0.85);
       backdrop-filter: blur(8px);
-      padding: 6px 12px;
-      border-radius: 12px;
-      border: 1px solid rgba(245, 158, 11, 0.4);
-      font-weight: 700;
-      color: #fcd34d;
-      font-size: 14px;
-    }
-    .icon-btn {
-      width: 38px;
-      height: 38px;
-      border-radius: 12px;
-      background: rgba(30, 41, 59, 0.8);
-      border: 1px solid #475569;
-      color: #ffffff;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 14px;
-      cursor: pointer;
-    }
-    .icon-btn:active {
-      transform: scale(0.95);
-    }
-    .boss-bar-wrap {
-      width: 100%;
-      max-width: 380px;
-      margin: 8px auto 0;
-      background: rgba(69, 10, 10, 0.85);
-      backdrop-filter: blur(8px);
+      padding: 8px 14px;
       border-radius: 16px;
-      padding: 10px 14px;
-      border: 1px solid rgba(239, 68, 68, 0.6);
-      box-shadow: 0 4px 20px rgba(69, 10, 10, 0.6);
+      border: 1.5px solid rgba(234, 179, 8, 0.6);
+      color: #facc15;
+      font-weight: 900;
+      font-size: 15px;
     }
-    .boss-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 6px;
-      font-size: 12px;
-    }
-    .boss-name {
-      font-weight: 800;
-      color: #fecaca;
-      letter-spacing: 0.5px;
-      text-transform: uppercase;
-    }
-    .boss-hp-val {
-      font-weight: 700;
-      color: #fca5a5;
-    }
-    .boss-track {
-      width: 100%;
-      height: 14px;
-      background: rgba(0, 0, 0, 0.7);
-      border-radius: 9999px;
-      overflow: hidden;
-      padding: 2px;
-      border: 1px solid rgba(239, 68, 68, 0.4);
-    }
-    .boss-fill {
-      height: 100%;
-      background: linear-gradient(90deg, #dc2626, #f59e0b);
-      border-radius: 9999px;
-      width: 100%;
-      transition: width 0.15s ease-out;
-    }
-    .bottom-bar {
+    .bottom-controls {
       display: flex;
       align-items: flex-end;
       justify-content: space-between;
     }
-    .drag-prompt {
+    .aim-guide {
+      background: rgba(15, 23, 42, 0.7);
+      backdrop-filter: blur(6px);
+      padding: 8px 14px;
+      border-radius: 12px;
+      color: #f1f5f9;
       font-size: 12px;
-      color: rgba(165, 243, 252, 0.9);
-      background: rgba(0, 0, 0, 0.45);
-      backdrop-filter: blur(4px);
-      padding: 6px 12px;
-      border-radius: 8px;
-      border: 1px solid rgba(6, 182, 212, 0.25);
-      animation: pulse 2s infinite;
+      font-weight: 700;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      animation: pulseGuide 2s infinite ease-in-out;
     }
-    @keyframes pulse {
-      0%, 100% { opacity: 0.7; }
-      50% { opacity: 1; }
+    @keyframes pulseGuide {
+      0%, 100% { opacity: 0.75; transform: translateY(0); }
+      50% { opacity: 1; transform: translateY(-2px); }
     }
     .chakra-btn {
       position: relative;
-      width: 66px;
-      height: 66px;
+      width: 72px;
+      height: 72px;
       border-radius: 50%;
-      background: linear-gradient(135deg, #d97706, #facc15, #fef08a);
+      background: linear-gradient(135deg, #d97706, #fde047, #f59e0b);
       padding: 4px;
       border: none;
       cursor: pointer;
-      box-shadow: 0 0 20px rgba(250, 204, 21, 0.6);
+      box-shadow: 0 0 25px rgba(245, 158, 11, 0.7);
       display: flex;
-      flex-direction: column;
       align-items: center;
       justify-content: center;
     }
@@ -238,1040 +183,1040 @@
       width: 100%;
       height: 100%;
       border-radius: 50%;
-      background: linear-gradient(180deg, #172554, #1e1b4b);
+      background: radial-gradient(circle, #0284c7, #0f172a);
       display: flex;
       align-items: center;
       justify-content: center;
       position: relative;
+      border: 1.5px solid #fef08a;
       overflow: hidden;
-      border: 1px solid #fde047;
     }
-    .chakra-spin {
-      animation: spin 1.2s linear infinite;
-      width: 38px;
-      height: 38px;
+    .chakra-spin-svg {
+      width: 44px;
+      height: 44px;
+      animation: spin 1s linear infinite;
     }
     @keyframes spin {
       100% { transform: rotate(360deg); }
     }
-    .cooldown-mask {
+    .cooldown-overlay {
       position: absolute;
       inset: 0;
-      background: rgba(0, 0, 0, 0.75);
+      background: rgba(15, 23, 42, 0.85);
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-weight: 800;
-      font-size: 14px;
+      font-weight: 900;
+      font-size: 15px;
       color: #ffffff;
     }
-    .chakra-label {
+    .chakra-title {
       font-size: 11px;
-      font-weight: 700;
-      color: #fde047;
+      font-weight: 900;
+      color: #fef08a;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.8);
       margin-top: 4px;
       letter-spacing: 0.5px;
     }
+    /* Modals */
     .modal-overlay {
       position: absolute;
       inset: 0;
-      z-index: 40;
-      background: linear-gradient(180deg, rgba(15, 23, 42, 0.98), rgba(9, 13, 22, 0.99));
+      z-index: 50;
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(12px);
       display: flex;
-      flex-direction: column;
       align-items: center;
-      justify-content: space-between;
+      justify-content: center;
       padding: 24px;
     }
-    .modal-dialog {
+    .modal-card {
       width: 100%;
-      max-width: 340px;
-      background: linear-gradient(180deg, #1e1b4b, #0f172a);
-      border: 1px solid rgba(245, 158, 11, 0.6);
-      border-radius: 24px;
-      padding: 24px;
+      max-width: 330px;
+      background: linear-gradient(180deg, #1e293b, #0f172a);
+      border: 2px solid rgba(245, 158, 11, 0.6);
+      border-radius: 28px;
+      padding: 26px 20px;
       text-align: center;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
-      margin: auto;
+      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.8);
     }
-    .btn-primary {
+    .btn-main {
       width: 100%;
-      padding: 14px;
-      border-radius: 16px;
+      padding: 15px;
+      border-radius: 18px;
       background: linear-gradient(90deg, #f59e0b, #eab308);
       color: #0f172a;
       font-weight: 900;
-      font-size: 16px;
+      font-size: 17px;
       border: none;
       cursor: pointer;
-      box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 10px;
+      box-shadow: 0 6px 20px rgba(245, 158, 11, 0.45);
+      margin-bottom: 12px;
     }
-    .btn-primary:active {
+    .btn-main:active {
       transform: scale(0.96);
     }
-    .btn-secondary {
+    .btn-sub {
       width: 100%;
-      padding: 14px;
+      padding: 13px;
       border-radius: 16px;
-      background: rgba(30, 41, 59, 0.8);
-      border: 1px solid #334155;
-      color: #cbd5e1;
-      font-weight: 700;
-      font-size: 14px;
+      background: rgba(30, 41, 59, 0.9);
+      border: 1.5px solid #334155;
+      color: #94a3b8;
+      font-weight: 800;
+      font-size: 15px;
       cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 10px;
     }
-    .btn-secondary:active {
+    .btn-sub:active {
       transform: scale(0.96);
     }
     .hidden {
       display: none !important;
     }
-    #flashOverlay {
-      position: absolute;
-      inset: 0;
-      background: #f59e0b;
-      pointer-events: none;
-      opacity: 0;
-      z-index: 30;
-      transition: opacity 0.2s ease-out;
-    }
   </style>
 </head>
 <body>
 
-  <div id="canvas-container">
-    <canvas id="gameCanvas"></canvas>
-  </div>
-
-  <div id="flashOverlay"></div>
+  <div id="canvas-container"></div>
 
   <!-- In-Game HUD -->
   <div class="hud-layer">
     <div class="top-bar">
-      <div class="badge interactive">
+      <!-- Army Count Badge -->
+      <div class="card-badge interactive">
         <div class="badge-icon">⚡</div>
-        <div>
-          <div class="badge-label">Divine Army</div>
-          <div id="soldierCountText" class="badge-value">10</div>
+        <div class="badge-text">
+          <span class="badge-label">Blue Army</span>
+          <span id="armyCountLabel" class="badge-val">0</span>
         </div>
       </div>
 
-      <div class="progress-bar-container">
-        <div class="progress-header">
-          <span id="levelNameBadge">Level 1: Desert</span>
-          <span id="progressPercentText">0%</span>
+      <!-- Level Progress -->
+      <div class="level-progress-box">
+        <div class="progress-txt">
+          <span id="levelTitleText">LEVEL 1</span>
+          <span id="progressPctText">0%</span>
         </div>
         <div class="progress-track">
           <div id="progressBarFill" class="progress-fill"></div>
         </div>
       </div>
 
-      <div style="display:flex; gap:8px;">
-        <div class="coins-badge interactive">
-          <span>🪙</span>
-          <span id="coinsText">0</span>
-        </div>
-        <button id="pauseBtn" class="icon-btn interactive">⏸</button>
-      </div>
-    </div>
-
-    <!-- Boss Health Bar -->
-    <div id="bossBarContainer" class="boss-bar-wrap hidden">
-      <div class="boss-header">
-        <span id="bossNameLabel" class="boss-name">👹 Asura Commander</span>
-        <span id="bossHpPercent" class="boss-hp-val">100%</span>
-      </div>
-      <div class="boss-track">
-        <div id="bossHpFill" class="boss-fill"></div>
+      <!-- Coins -->
+      <div class="coins-box interactive">
+        <span>🪙</span>
+        <span id="coinsLabel">0</span>
       </div>
     </div>
 
     <!-- Bottom Controls -->
-    <div class="bottom-bar">
-      <div id="dragPrompt" class="drag-prompt">
-        👈 Drag left/right to steer army 👉
+    <div class="bottom-controls">
+      <div class="aim-guide">
+        👈 Drag finger to steer Cannon 👉
       </div>
 
+      <!-- Sudarshan Chakra Button -->
       <div class="interactive" style="display:flex; flex-direction:column; align-items:center;">
-        <button id="chakraAbilityBtn" class="chakra-btn">
+        <button id="chakraBtn" class="chakra-btn">
           <div class="chakra-inner">
-            <svg viewBox="0 0 100 100" class="chakra-spin">
-              <circle cx="50" cy="50" r="16" fill="#ffd700" />
-              <path d="M50 10 L55 35 L45 35 Z M50 90 L55 65 L45 65 Z M10 50 L35 55 L35 45 Z M90 50 L65 55 L65 45 Z M22 22 L40 37 L33 44 Z M78 78 L60 63 L67 56 Z M22 78 L37 60 L44 67 Z M78 22 L63 40 L56 33 Z" fill="#ffd700"/>
+            <svg viewBox="0 0 100 100" class="chakra-spin-svg">
+              <circle cx="50" cy="50" r="16" fill="#facc15" />
+              <path d="M50 8 L54 34 L46 34 Z M50 92 L54 66 L46 66 Z M8 50 L34 54 L34 46 Z M92 50 L66 54 L66 46 Z M20 20 L38 36 L32 42 Z M80 80 L62 64 L68 58 Z M20 80 L36 62 L42 68 Z M80 20 L64 38 L58 32 Z" fill="#ffd700"/>
             </svg>
-            <div id="chakraCooldownMask" class="cooldown-mask hidden">
-              <span id="chakraCooldownSecs">8s</span>
+            <div id="chakraCooldownMask" class="cooldown-overlay hidden">
+              <span id="chakraCooldownSec">6s</span>
             </div>
           </div>
         </button>
-        <span class="chakra-label">CHAKRA</span>
+        <span class="chakra-title">CHAKRA</span>
       </div>
     </div>
   </div>
 
   <!-- Main Menu Modal -->
   <div id="mainMenuModal" class="modal-overlay">
-    <div style="text-align:center; margin-top:20px;">
-      <div style="display:inline-block; padding:4px 12px; background:rgba(245,158,11,0.2); border:1px solid rgba(245,158,11,0.4); border-radius:9999px; font-size:11px; font-weight:700; color:#fde047; text-transform:uppercase; letter-spacing:1px; margin-bottom:8px;">
-        Mythological Crowd Runner
+    <div class="modal-card">
+      <div style="font-size:12px; font-weight:800; color:#38bdf8; text-transform:uppercase; letter-spacing:1px; margin-bottom:4px;">
+        Divine Mythological Crowd Runner
       </div>
-      <h1 style="font-size:32px; font-weight:900; background:linear-gradient(90deg, #fde047, #67e8f9); -webkit-background-clip:text; -webkit-text-fill-color:transparent;">
+      <h1 style="font-size:28px; font-weight:900; background:linear-gradient(90deg, #facc15, #38bdf8); -webkit-background-clip:text; -webkit-text-fill-color:transparent; margin-bottom:2px;">
         SHRI KRISHNA
       </h1>
-      <h2 style="font-size:22px; font-weight:900; color:#38bdf8; letter-spacing:2px;">
+      <h2 style="font-size:20px; font-weight:900; color:#0284c7; letter-spacing:2px; margin-bottom:14px;">
         DIVINE ARMY
       </h2>
-      <p style="font-size:12px; color:#94a3b8; margin-top:6px; max-width:280px; margin-left:auto; margin-right:auto;">
-        Command the divine host, multiply through sacred gates, and conquer the Asuras!
-      </p>
-    </div>
 
-    <!-- Character Card -->
-    <div style="width:160px; height:160px; border-radius:24px; background:linear-gradient(135deg, rgba(6,182,212,0.3), rgba(245,158,11,0.2)); border:1px solid rgba(6,182,212,0.5); display:flex; flex-direction:column; align-items:center; justify-content:center; box-shadow:0 10px 30px rgba(0,0,0,0.5);">
-      <div style="font-size:52px;">🦚</div>
-      <div style="color:#38bdf8; font-weight:800; font-size:14px; margin-top:4px;">Lord Krishna</div>
-      <div style="color:#fde047; font-size:11px; font-weight:600;">Supreme Commander</div>
-    </div>
+      <!-- Krishna Chariot Avatar -->
+      <div style="width:120px; height:120px; margin:0 auto 18px; border-radius:24px; background:radial-gradient(circle, #0284c7, #0f172a); border:2px solid #38bdf8; display:flex; flex-direction:column; align-items:center; justify-content:center; box-shadow:0 8px 25px rgba(2,132,199,0.5);">
+        <div style="font-size:42px;">🦚</div>
+        <div style="color:#fde047; font-weight:900; font-size:12px; margin-top:2px;">Lord Krishna</div>
+        <div style="color:#a5f3fc; font-size:10px;">Chariot Cannon</div>
+      </div>
 
-    <!-- Level Select Buttons -->
-    <div style="width:100%; max-width:290px;">
-      <button id="level1Btn" class="btn-primary">
-        <span>Level 1: Desert Kingdom</span>
-        <span>⚔️ Play</span>
+      <button id="playBtn" class="btn-main">
+        ⚔️ BATTLE START
       </button>
-      <button id="level2Btn" class="btn-secondary">
-        <span>Level 2: Forest of Trials</span>
-        <span id="level2LockBadge">🔒 Locked</span>
-      </button>
-      <button id="level3Btn" class="btn-secondary">
-        <span>Level 3: Mountain Fortress</span>
-        <span id="level3LockBadge">🔒 Locked</span>
-      </button>
-    </div>
 
-    <div style="font-size:11px; color:#64748b; padding-bottom:8px;">
-      Android ARM64 Native Offline Build
+      <div style="display:flex; justify-content:space-between; font-size:12px; color:#94a3b8; font-weight:700; margin-top:8px;">
+        <span>Multipliers: ×2, ×3, ×5, ×10</span>
+        <span>Android 60 FPS</span>
+      </div>
     </div>
   </div>
 
   <!-- Victory Modal -->
-  <div id="victoryModal" class="modal-overlay hidden" style="justify-content:center; background:rgba(0,0,0,0.85); backdrop-filter:blur(8px);">
-    <div class="modal-dialog">
-      <div style="font-size:48px; margin-bottom:8px;">🏆</div>
-      <h2 style="font-size:24px; font-weight:900; color:#fde047;">DIVINE VICTORY!</h2>
-      <p style="font-size:12px; color:#a5f3fc; margin-top:4px;">The Asura Commander was vanquished by your divine army!</p>
+  <div id="victoryModal" class="modal-overlay hidden">
+    <div class="modal-card" style="border-color:#facc15;">
+      <div style="font-size:50px; margin-bottom:4px;">🏆</div>
+      <h2 style="font-size:24px; font-weight:900; color:#facc15;">DIVINE VICTORY!</h2>
+      <p style="font-size:13px; color:#cbd5e1; margin-top:4px;">The Asura horde and Titan Boss were vanquished!</p>
 
-      <div style="margin:20px 0; padding:14px; background:rgba(15,23,42,0.8); border:1px solid #334155; border-radius:16px;">
-        <div style="display:flex; justify-content:space-between; font-size:14px; margin-bottom:8px;">
-          <span style="color:#94a3b8;">Army Survivors:</span>
-          <span id="victoryArmyCount" style="color:#38bdf8; font-weight:800;">42</span>
+      <div style="margin:16px 0; padding:12px; background:rgba(0,0,0,0.5); border-radius:16px; border:1px solid #334155; display:flex; justify-content:space-around;">
+        <div>
+          <div style="font-size:11px; color:#94a3b8;">Crowd Multiplied</div>
+          <div id="victoryCountTxt" style="font-size:20px; font-weight:900; color:#38bdf8;">850+</div>
         </div>
-        <div style="display:flex; justify-content:space-between; font-size:14px;">
-          <span style="color:#94a3b8;">Coins Earned:</span>
-          <span id="victoryCoinsReward" style="color:#fde047; font-weight:800;">+50 🪙</span>
+        <div>
+          <div style="font-size:11px; color:#94a3b8;">Coins Earned</div>
+          <div id="victoryCoinsTxt" style="font-size:20px; font-weight:900; color:#facc15;">+100 🪙</div>
         </div>
       </div>
 
-      <button id="nextLevelBtn" class="btn-primary" style="justify-content:center;">
-        Next Realm ➔
+      <button id="nextLevelBtn" class="btn-main">
+        NEXT REALM ➔
       </button>
-      <button id="victoryReplayBtn" class="btn-secondary" style="justify-content:center;">
+      <button id="replayBtn" class="btn-sub">
         Replay Level
       </button>
     </div>
   </div>
 
   <!-- Defeat Modal -->
-  <div id="defeatModal" class="modal-overlay hidden" style="justify-content:center; background:rgba(0,0,0,0.85); backdrop-filter:blur(8px);">
-    <div class="modal-dialog" style="border-color:rgba(239,68,68,0.6); background:linear-gradient(180deg, #450a0a, #0f172a);">
-      <div style="font-size:48px; margin-bottom:8px;">⚔️</div>
+  <div id="defeatModal" class="modal-overlay hidden">
+    <div class="modal-card" style="border-color:#ef4444; background:linear-gradient(180deg, #450a0a, #0f172a);">
+      <div style="font-size:50px; margin-bottom:4px;">⚔️</div>
       <h2 style="font-size:24px; font-weight:900; color:#f87171;">ARMY OVERWHELMED</h2>
-      <p style="font-size:12px; color:#fca5a5; margin-top:4px;">Your forces were scattered by the demonic horde.</p>
+      <p style="font-size:13px; color:#fca5a5; margin-top:4px;">The Asuras reached Krishna's chariot cannon.</p>
 
-      <div style="margin:16px 0; padding:12px; background:rgba(0,0,0,0.5); border:1px solid rgba(185,28,28,0.4); border-radius:12px; font-size:11px; color:#fef08a;">
-        💡 Prioritize multiplier gates (×3, ×5) and activate Sudarshan Chakra against dense asura squads!
+      <div style="margin:14px 0; padding:10px; background:rgba(0,0,0,0.5); border-radius:12px; font-size:11px; color:#fef08a;">
+        💡 Aim through the ×3 and ×5 gates to build a colossal crowd before the red horde reaches you!
       </div>
 
-      <button id="defeatRetryBtn" class="btn-primary" style="background:linear-gradient(90deg, #dc2626, #ea580c); color:#ffffff; justify-content:center;">
-        Retry Battle 🔄
+      <button id="retryBtn" class="btn-main" style="background:linear-gradient(90deg, #dc2626, #ea580c); color:#fff;">
+        RETRY LEVEL 🔄
       </button>
-      <button id="defeatMenuBtn" class="btn-secondary" style="justify-content:center;">
-        Return to Menu
+      <button id="menuBtn" class="btn-sub">
+        Main Menu
       </button>
     </div>
   </div>
 
   <script>
-    // --- Audio Synthesizer (Section 22) ---
-    class SoundEngine {
+    // --- 1. Sound Synthesizer Engine (Section 22) ---
+    class SoundFX {
       constructor() {
         this.ctx = null;
-        this.masterVolume = 1.0;
-        this.musicOsc = null;
         this.init();
       }
-
       init() {
         try {
           const AudioContext = window.AudioContext || window.webkitAudioContext;
           if (AudioContext) this.ctx = new AudioContext();
-        } catch (e) {}
+        } catch(e) {}
       }
-
-      ensureContext() {
-        if (this.ctx && this.ctx.state === 'suspended') {
-          this.ctx.resume();
-        }
+      resume() {
+        if (this.ctx && this.ctx.state === 'suspended') this.ctx.resume();
       }
-
-      playGateSound(type, value) {
+      playShoot() {
         if (!this.ctx) return;
-        this.ensureContext();
-        const now = this.ctx.currentTime;
+        this.resume();
+        const t = this.ctx.currentTime;
         const osc = this.ctx.createOscillator();
         const gain = this.ctx.createGain();
-
-        let baseFreq = 440;
-        if (type === 'mult') {
-          baseFreq = 440 * (1 + value * 0.18);
-          osc.type = 'triangle';
-        } else if (type === 'add') {
-          baseFreq = 523.25 + (value * 12);
-          osc.type = 'sine';
-        } else {
-          baseFreq = 220;
-          osc.type = 'sawtooth';
-        }
-
-        osc.frequency.setValueAtTime(baseFreq, now);
-        osc.frequency.exponentialRampToValueAtTime(baseFreq * 1.5, now + 0.18);
-        gain.gain.setValueAtTime(0.35, now);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.28);
-
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(380, t);
+        osc.frequency.exponentialRampToValueAtTime(160, t + 0.08);
+        gain.gain.setValueAtTime(0.12, t);
+        gain.gain.exponentialRampToValueAtTime(0.01, t + 0.08);
         osc.connect(gain);
         gain.connect(this.ctx.destination);
-        osc.start(now);
-        osc.stop(now + 0.3);
+        osc.start(t);
+        osc.stop(t + 0.09);
       }
-
-      playChakraSound() {
+      playGateChime(multiplier) {
         if (!this.ctx) return;
-        this.ensureContext();
-        const now = this.ctx.currentTime;
+        this.resume();
+        const t = this.ctx.currentTime;
         const osc = this.ctx.createOscillator();
         const gain = this.ctx.createGain();
-
-        osc.type = 'sawtooth';
-        osc.frequency.setValueAtTime(320, now);
-        osc.frequency.linearRampToValueAtTime(880, now + 0.3);
-        osc.frequency.linearRampToValueAtTime(440, now + 0.8);
-        gain.gain.setValueAtTime(0.4, now);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.85);
-
-        osc.connect(gain);
-        gain.connect(this.ctx.destination);
-        osc.start(now);
-        osc.stop(now + 0.9);
-      }
-
-      playImpactSound() {
-        if (!this.ctx) return;
-        this.ensureContext();
-        const now = this.ctx.currentTime;
-        const osc = this.ctx.createOscillator();
-        const gain = this.ctx.createGain();
-
         osc.type = 'sine';
-        osc.frequency.setValueAtTime(150, now);
-        osc.frequency.exponentialRampToValueAtTime(40, now + 0.15);
-        gain.gain.setValueAtTime(0.5, now);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
-
+        const freq = 440 * (1 + multiplier * 0.25);
+        osc.frequency.setValueAtTime(freq, t);
+        osc.frequency.exponentialRampToValueAtTime(freq * 1.5, t + 0.2);
+        gain.gain.setValueAtTime(0.35, t);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.25);
         osc.connect(gain);
         gain.connect(this.ctx.destination);
-        osc.start(now);
-        osc.stop(now + 0.22);
+        osc.start(t);
+        osc.stop(t + 0.26);
       }
-
-      playBossRoar() {
+      playChakra() {
         if (!this.ctx) return;
-        this.ensureContext();
-        const now = this.ctx.currentTime;
+        this.resume();
+        const t = this.ctx.currentTime;
         const osc = this.ctx.createOscillator();
         const gain = this.ctx.createGain();
-
         osc.type = 'sawtooth';
-        osc.frequency.setValueAtTime(110, now);
-        osc.frequency.linearRampToValueAtTime(75, now + 0.6);
-        gain.gain.setValueAtTime(0.6, now);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.7);
-
+        osc.frequency.setValueAtTime(260, t);
+        osc.frequency.linearRampToValueAtTime(800, t + 0.4);
+        gain.gain.setValueAtTime(0.3, t);
+        gain.gain.exponentialRampToValueAtTime(0.01, t + 0.7);
         osc.connect(gain);
         gain.connect(this.ctx.destination);
-        osc.start(now);
-        osc.stop(now + 0.75);
+        osc.start(t);
+        osc.stop(t + 0.75);
       }
-
-      startCelestialDrone() {
-        if (!this.ctx || this.musicOsc) return;
-        this.ensureContext();
-        const now = this.ctx.currentTime;
-        this.musicOsc = this.ctx.createOscillator();
+      playPop() {
+        if (!this.ctx) return;
+        this.resume();
+        const t = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
         const gain = this.ctx.createGain();
-
-        this.musicOsc.type = 'triangle';
-        this.musicOsc.frequency.setValueAtTime(146.83, now); // D3 chord
-        gain.gain.setValueAtTime(0.05, now);
-
-        this.musicOsc.connect(gain);
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(200, t);
+        osc.frequency.exponentialRampToValueAtTime(60, t + 0.07);
+        gain.gain.setValueAtTime(0.2, t);
+        gain.gain.exponentialRampToValueAtTime(0.01, t + 0.08);
+        osc.connect(gain);
         gain.connect(this.ctx.destination);
-        this.musicOsc.start(now);
+        osc.start(t);
+        osc.stop(t + 0.09);
       }
-
-      stopCelestialDrone() {
-        if (this.musicOsc) {
-          try {
-            this.musicOsc.stop();
-            this.musicOsc.disconnect();
-          } catch(e) {}
-          this.musicOsc = null;
-        }
+      playVictory() {
+        if (!this.ctx) return;
+        this.resume();
+        const t = this.ctx.currentTime;
+        // Conch / Fanfare chord
+        [293.66, 369.99, 440, 587.33].forEach((f, i) => {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(f, t + i * 0.1);
+          gain.gain.setValueAtTime(0.2, t + i * 0.1);
+          gain.gain.exponentialRampToValueAtTime(0.001, t + 1.2);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(t + i * 0.1);
+          osc.stop(t + 1.3);
+        });
       }
     }
+    const audio = new SoundFX();
 
-    const sound = new SoundEngine();
+    // --- 2. Three.js Full 3D Scene Architecture ---
+    const container = document.getElementById('canvas-container');
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0xf6ba78); // Warm mythological canyon sky
+    scene.fog = new THREE.Fog(0xf6ba78, 45, 95);
 
-    // --- Save System ---
-    const SaveState = {
-      highestUnlocked: 1,
-      coins: 0,
-      load() {
-        try {
-          const raw = localStorage.getItem('krishna_army_save');
-          if (raw) {
-            const data = JSON.parse(raw);
-            this.highestUnlocked = data.highestUnlocked || 1;
-            this.coins = data.coins || 0;
-          }
-        } catch(e) {}
-      },
-      save() {
-        try {
-          localStorage.setItem('krishna_army_save', JSON.stringify({
-            highestUnlocked: this.highestUnlocked,
-            coins: this.coins
-          }));
-        } catch(e) {}
+    const camera = new THREE.PerspectiveCamera(46, window.innerWidth / window.innerHeight, 0.1, 150);
+    // Elevated Mob Control perspective looking forward down the track
+    camera.position.set(0, 18, -13);
+    camera.lookAt(0, 1, 15);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    container.appendChild(renderer.domElement);
+
+    // Dynamic 3D Lights
+    const hemiLight = new THREE.HemisphereLight(0xfff7ed, 0xb45309, 0.85);
+    scene.add(hemiLight);
+
+    const dirLight = new THREE.DirectionalLight(0xffedd5, 1.3);
+    dirLight.position.set(15, 30, 10);
+    dirLight.castShadow = true;
+    dirLight.shadow.mapSize.width = 1024;
+    dirLight.shadow.mapSize.height = 1024;
+    dirLight.shadow.camera.near = 1;
+    dirLight.shadow.camera.far = 80;
+    dirLight.shadow.camera.left = -16;
+    dirLight.shadow.camera.right = 16;
+    dirLight.shadow.camera.top = 40;
+    dirLight.shadow.camera.bottom = -16;
+    scene.add(dirLight);
+
+    // --- 3. 3D Environment (Canyon Cliffs, Track & Bridge) ---
+    // Ground plane
+    const groundGeo = new THREE.PlaneGeometry(120, 200);
+    const groundMat = new THREE.MeshLambertMaterial({ color: 0xd97706 });
+    const ground = new THREE.Mesh(groundGeo, groundMat);
+    ground.rotation.x = -Math.PI / 2;
+    ground.position.y = -0.05;
+    ground.receiveShadow = true;
+    scene.add(ground);
+
+    // 3D Road Track
+    const roadWidth = 8.0;
+    const roadLength = 90;
+    const roadGeo = new THREE.PlaneGeometry(roadWidth, roadLength);
+    const roadMat = new THREE.MeshLambertMaterial({ color: 0xe2e8f0 }); // Crisp road surface
+    const road = new THREE.Mesh(roadGeo, roadMat);
+    road.rotation.x = -Math.PI / 2;
+    road.position.set(0, 0, roadLength / 2 - 8);
+    road.receiveShadow = true;
+    scene.add(road);
+
+    // Road White Dashed Dividers
+    for (let z = -6; z < roadLength; z += 5) {
+      const lineGeo = new THREE.PlaneGeometry(0.3, 2.5);
+      const lineMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+      const line = new THREE.Mesh(lineGeo, lineMat);
+      line.rotation.x = -Math.PI / 2;
+      line.position.set(0, 0.01, z);
+      scene.add(line);
+    }
+
+    // Wooden Guardrails on left & right
+    function createFences() {
+      const fenceMat = new THREE.MeshLambertMaterial({ color: 0x854d0e });
+      for (let z = -6; z < roadLength - 5; z += 3.5) {
+        // Left post
+        const postL = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, 1.2), fenceMat);
+        postL.position.set(-roadWidth / 2 - 0.2, 0.6, z);
+        postL.castShadow = true;
+        scene.add(postL);
+
+        // Right post
+        const postR = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, 1.2), fenceMat);
+        postR.position.set(roadWidth / 2 + 0.2, 0.6, z);
+        postR.castShadow = true;
+        scene.add(postR);
+
+        // Rails
+        const railL = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.15, 3.6), fenceMat);
+        railL.position.set(-roadWidth / 2 - 0.2, 0.8, z + 1.75);
+        scene.add(railL);
+
+        const railR = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.15, 3.6), fenceMat);
+        railR.position.set(roadWidth / 2 + 0.2, 0.8, z + 1.75);
+        scene.add(railR);
       }
-    };
-    SaveState.load();
+    }
+    createFences();
 
-    // --- 3D Levels ---
-    const Levels = [
+    // 3D Canyon Rock Cliffs
+    function createCanyonRocks() {
+      const rockMat = new THREE.MeshLambertMaterial({ color: 0xb45309 });
+      for (let i = 0; i < 28; i++) {
+        const side = (i % 2 === 0) ? -1 : 1;
+        const x = side * (roadWidth / 2 + 2.5 + Math.random() * 3.5);
+        const z = -6 + (i * 3.2);
+        const size = 1.8 + Math.random() * 2.5;
+
+        const rock = new THREE.Mesh(new THREE.DodecahedronGeometry(size), rockMat);
+        rock.position.set(x, size * 0.6, z);
+        rock.rotation.set(Math.random(), Math.random(), Math.random());
+        rock.castShadow = true;
+        rock.receiveShadow = true;
+        scene.add(rock);
+      }
+    }
+    createCanyonRocks();
+
+    // --- 4. The Player's Divine Chariot Cannon (Bottom) ---
+    const cannonGroup = new THREE.Group();
+    scene.add(cannonGroup);
+
+    // Sacred rotating Golden Wheel Pedestal underneath
+    const pedestalGeo = new THREE.CylinderGeometry(1.6, 1.8, 0.2, 24);
+    const goldMat = new THREE.MeshStandardMaterial({ color: 0xfacc15, metalness: 0.8, roughness: 0.2 });
+    const pedestal = new THREE.Mesh(pedestalGeo, goldMat);
+    pedestal.position.y = 0.1;
+    cannonGroup.add(pedestal);
+
+    // Cannon Carriage / Wheels
+    const wheelMat = new THREE.MeshLambertMaterial({ color: 0x1e293b });
+    const wheelL = new THREE.Mesh(new THREE.CylinderGeometry(0.45, 0.45, 0.3, 16), wheelMat);
+    wheelL.rotation.z = Math.PI / 2;
+    wheelL.position.set(-0.95, 0.45, 0);
+    cannonGroup.add(wheelL);
+
+    const wheelR = new THREE.Mesh(new THREE.CylinderGeometry(0.45, 0.45, 0.3, 16), wheelMat);
+    wheelR.rotation.z = Math.PI / 2;
+    wheelR.position.set(0.95, 0.45, 0);
+    cannonGroup.add(wheelR);
+
+    // Divine Celestial Blue Cannon Barrel
+    const barrelGeo = new THREE.CylinderGeometry(0.55, 0.65, 2.4, 20);
+    const blueMat = new THREE.MeshStandardMaterial({ color: 0x0284c7, metalness: 0.6, roughness: 0.3 });
+    const cannonBarrel = new THREE.Mesh(barrelGeo, blueMat);
+    cannonBarrel.rotation.x = Math.PI / 2.2;
+    cannonBarrel.position.set(0, 0.85, 0.4);
+    cannonBarrel.castShadow = true;
+    cannonGroup.add(cannonBarrel);
+
+    // Peacock Feather Accent on Cannon
+    const featherGeo = new THREE.ConeGeometry(0.35, 1.1, 8);
+    const featherMat = new THREE.MeshBasicMaterial({ color: 0x10b981 });
+    const feather = new THREE.Mesh(featherGeo, featherMat);
+    feather.position.set(0, 1.7, -0.4);
+    feather.rotation.x = -Math.PI / 6;
+    cannonGroup.add(feather);
+
+    cannonGroup.position.set(0, 0, -4.5);
+
+    // --- 5. 3D Multiplier Gates ---
+    // Gate Archetypes matching Mob Control screenshots
+    const gateRows = [
       {
-        id: 1,
-        name: "Ancient Desert Kingdom",
-        length: 160,
-        startCrowd: 10,
-        groundColor: '#b58b4c',
-        trackColor: '#e0c083',
-        fogColor: '#42280d',
-        gates: [
-          { z: 25, left: { type: 'add', val: 5 }, right: { type: 'mult', val: 2 }, activated: false },
-          { z: 55, left: { type: 'mult', val: 3 }, right: { type: 'add', val: 10 }, activated: false },
-          { z: 90, left: { type: 'pen', val: 5 }, right: { type: 'mult', val: 4 }, activated: false },
-          { z: 125, left: { type: 'mult', val: 5 }, right: { type: 'add', val: 20 }, activated: false }
-        ],
-        enemies: [
-          { z: 40, count: 6, hp: 12, maxHp: 12, type: 'rakshasa' },
-          { z: 75, count: 12, hp: 15, maxHp: 15, type: 'rakshasa' },
-          { z: 110, count: 8, hp: 30, maxHp: 30, type: 'asura' }
-        ],
-        boss: { name: "Desert Asura Commander", hp: 350, maxHp: 350, reward: 50, color: '#e65c00' }
+        z: 12,
+        left: { type: 'add', val: 5, color: 0x0284c7 },
+        right: { type: 'mult', val: 2, color: 0x7c3aed },
+        mesh: null,
+        oscSpeed: 1.6,
+        amplitude: 1.2
       },
       {
-        id: 2,
-        name: "Forest of Divine Trials",
-        length: 200,
-        startCrowd: 12,
-        groundColor: '#1c4524',
-        trackColor: '#3c7546',
-        fogColor: '#0a2110',
-        gates: [
-          { z: 30, left: { type: 'mult', val: 2 }, right: { type: 'add', val: 8 }, activated: false },
-          { z: 70, left: { type: 'pen', val: 8 }, right: { type: 'mult', val: 3 }, activated: false },
-          { z: 115, left: { type: 'mult', val: 4 }, right: { type: 'add', val: 15 }, activated: false },
-          { z: 155, left: { type: 'mult', val: 5 }, right: { type: 'add', val: 25 }, activated: false }
-        ],
-        enemies: [
-          { z: 50, count: 10, hp: 16, maxHp: 16, type: 'rakshasa' },
-          { z: 95, count: 14, hp: 28, maxHp: 28, type: 'asura' },
-          { z: 135, count: 10, hp: 45, maxHp: 45, type: 'elite' }
-        ],
-        boss: { name: "Armored Demon King", hp: 600, maxHp: 600, reward: 100, color: '#880e4f' }
+        z: 28,
+        left: { type: 'mult', val: 3, color: 0x8b5cf6 },
+        right: { type: 'mult', val: 4, color: 0xa855f7 },
+        mesh: null,
+        oscSpeed: 2.2,
+        amplitude: 1.5
       },
       {
-        id: 3,
-        name: "Mountain Fortress",
-        length: 240,
-        startCrowd: 15,
-        groundColor: '#37474f',
-        trackColor: '#546e7a',
-        fogColor: '#1a2327',
-        gates: [
-          { z: 35, left: { type: 'mult', val: 3 }, right: { type: 'add', val: 12 }, activated: false },
-          { z: 80, left: { type: 'add', val: 20 }, right: { type: 'mult', val: 4 }, activated: false },
-          { z: 130, left: { type: 'pen', val: 15 }, right: { type: 'mult', val: 5 }, activated: false },
-          { z: 180, left: { type: 'mult', val: 10 }, right: { type: 'add', val: 30 }, activated: false }
-        ],
-        enemies: [
-          { z: 60, count: 14, hp: 20, maxHp: 20, type: 'rakshasa' },
-          { z: 105, count: 16, hp: 35, maxHp: 35, type: 'asura' },
-          { z: 155, count: 12, hp: 60, maxHp: 60, type: 'elite' }
-        ],
-        boss: { name: "Volcanic Fire Guardian", hp: 950, maxHp: 950, reward: 200, color: '#d50000' }
+        z: 46,
+        left: { type: 'mult', val: 5, color: 0xd97706 },
+        right: { type: 'mult', val: 10, color: 0xeab308 },
+        mesh: null,
+        oscSpeed: 0,
+        amplitude: 0
       }
     ];
 
-    const canvas = document.getElementById('gameCanvas');
-    const ctx = canvas.getContext('2d');
-    let screenWidth = 0;
-    let screenHeight = 0;
+    function createGateArch(data) {
+      const arch = new THREE.Group();
 
-    function resizeCanvas() {
-      screenWidth = canvas.width = window.innerWidth;
-      screenHeight = canvas.height = window.innerHeight;
+      // Translucent glowing screen
+      const screenGeo = new THREE.PlaneGeometry(3.6, 2.0);
+      const screenMat = new THREE.MeshStandardMaterial({
+        color: data.color,
+        emissive: data.color,
+        emissiveIntensity: 0.6,
+        transparent: true,
+        opacity: 0.85,
+        side: THREE.DoubleSide
+      });
+      const screenMesh = new THREE.Mesh(screenGeo, screenMat);
+      screenMesh.position.y = 1.2;
+      arch.add(screenMesh);
+
+      // Glowing Neon Pillars on ends
+      const postGeo = new THREE.BoxGeometry(0.3, 2.4, 0.3);
+      const postMat = new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xffffff, emissiveIntensity: 0.5 });
+      const pL = new THREE.Mesh(postGeo, postMat);
+      pL.position.set(-1.8, 1.2, 0);
+      arch.add(pL);
+
+      const pR = new THREE.Mesh(postGeo, postMat);
+      pR.position.set(1.8, 1.2, 0);
+      arch.add(pR);
+
+      // 3D Canvas Texture for Numbers (x2, x3, x5, +5)
+      const labelCanvas = document.createElement('canvas');
+      labelCanvas.width = 256;
+      labelCanvas.height = 128;
+      const lCtx = labelCanvas.getContext('2d');
+      lCtx.fillStyle = '#ffffff';
+      lCtx.font = 'bold 72px system-ui';
+      lCtx.textAlign = 'center';
+      lCtx.textBaseline = 'middle';
+      const text = (data.type === 'mult' ? '×' : '+') + data.val;
+      lCtx.fillText(text, 128, 64);
+
+      const labelTex = new THREE.CanvasTexture(labelCanvas);
+      const labelMesh = new THREE.Mesh(
+        new THREE.PlaneGeometry(2.4, 1.2),
+        new THREE.MeshBasicMaterial({ map: labelTex, transparent: true })
+      );
+      labelMesh.position.set(0, 1.2, 0.05);
+      arch.add(labelMesh);
+
+      arch.userData = data;
+      return arch;
     }
-    window.addEventListener('resize', resizeCanvas);
-    resizeCanvas();
 
-    let currentLevel = null;
-    let gameState = 'MENU';
-    let playerX = 0;
-    let playerZ = 0;
-    let forwardSpeed = 16.0;
-    let crowdCount = 10;
-    let bossCurrentHp = 0;
-    let bossMaxHp = 0;
-    let chakraCooldownTimer = 0;
-    const CHAKRA_COOLDOWN = 10.0;
+    gateRows.forEach(row => {
+      const group = new THREE.Group();
+      const leftArch = createGateArch(row.left);
+      leftArch.position.x = -2.0;
+      group.add(leftArch);
+
+      const rightArch = createGateArch(row.right);
+      rightArch.position.x = 2.0;
+      group.add(rightArch);
+
+      group.position.z = row.z;
+      scene.add(group);
+      row.mesh = group;
+    });
+
+    // --- 6. 3D Titan Boss (Colossal Asura Commander) ---
+    const bossGroup = new THREE.Group();
+    scene.add(bossGroup);
+
+    // Colossal Asura Body
+    const bossMat = new THREE.MeshStandardMaterial({ color: 0xd97706, roughness: 0.4 }); // Golden Lava Asura
+    const bossTorso = new THREE.Mesh(new THREE.BoxGeometry(4.2, 3.8, 2.5), bossMat);
+    bossTorso.position.y = 3.5;
+    bossTorso.castShadow = true;
+    bossGroup.add(bossTorso);
+
+    // Glowing Lava Core on Chest
+    const coreMat = new THREE.MeshBasicMaterial({ color: 0xff3b30 });
+    const lavaCore = new THREE.Mesh(new THREE.SphereGeometry(0.8, 16, 16), coreMat);
+    lavaCore.position.set(0, 3.6, 1.3);
+    bossGroup.add(lavaCore);
+
+    // Shoulders & Spikes
+    const spikeMat = new THREE.MeshStandardMaterial({ color: 0x7c2d12 });
+    const spL = new THREE.Mesh(new THREE.ConeGeometry(0.6, 1.6, 6), spikeMat);
+    spL.position.set(-2.5, 4.6, 0);
+    spL.rotation.z = Math.PI / 4;
+    bossGroup.add(spL);
+
+    const spR = new THREE.Mesh(new THREE.ConeGeometry(0.6, 1.6, 6), spikeMat);
+    spR.position.set(2.5, 4.6, 0);
+    spR.rotation.z = -Math.PI / 4;
+    bossGroup.add(spR);
+
+    // Giant Spiked Maul Weapon in Hand
+    const hammerHandle = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.2, 4.8), spikeMat);
+    hammerHandle.position.set(2.8, 3.0, 1.0);
+    hammerHandle.rotation.x = Math.PI / 6;
+    bossGroup.add(hammerHandle);
+
+    const hammerHead = new THREE.Mesh(new THREE.BoxGeometry(1.6, 1.6, 2.0), new THREE.MeshStandardMaterial({ color: 0x991b1b }));
+    hammerHead.position.set(2.8, 4.8, 1.6);
+    bossGroup.add(hammerHead);
+
+    // Floating 3D Boss Health Badge directly above head (Like Mob Control screenshots!)
+    const bossHpCanvas = document.createElement('canvas');
+    bossHpCanvas.width = 256;
+    bossHpCanvas.height = 96;
+    const bCtx = bossHpCanvas.getContext('2d');
+    const bossHpTex = new THREE.CanvasTexture(bossHpCanvas);
+    const bossHpBadge = new THREE.Mesh(
+      new THREE.PlaneGeometry(3.6, 1.35),
+      new THREE.MeshBasicMaterial({ map: bossHpTex, transparent: true })
+    );
+    bossHpBadge.position.set(0, 6.8, 0);
+    bossGroup.add(bossHpBadge);
+
+    let bossMaxHp = 800;
+    let bossCurrentHp = 800;
+    bossGroup.position.set(0, 0, 65);
+
+    function updateBossHpUI() {
+      bCtx.clearRect(0, 0, 256, 96);
+      // Red Badge pill
+      bCtx.fillStyle = '#dc2626';
+      bCtx.beginPath();
+      bCtx.roundRect(10, 10, 236, 76, 38);
+      bCtx.fill();
+      bCtx.strokeStyle = '#ffffff';
+      bCtx.lineWidth = 6;
+      bCtx.stroke();
+      // HP Number
+      bCtx.fillStyle = '#ffffff';
+      bCtx.font = 'bold 50px system-ui';
+      bCtx.textAlign = 'center';
+      bCtx.textBaseline = 'middle';
+      bCtx.fillText(Math.max(0, Math.ceil(bossCurrentHp)), 128, 48);
+      bossHpTex.needsUpdate = true;
+    }
+    updateBossHpUI();
+
+    // --- 7. Swarms: Blue Divine Army & Red Asuras ---
+    const blueSoldiers = [];
+    const redEnemies = [];
+
+    // Shared Materials & Geometries for high 60 FPS mobile performance
+    const blueGeo = new THREE.SphereGeometry(0.38, 12, 12);
+    const blueUnitMat = new THREE.MeshStandardMaterial({ color: 0x38bdf8, roughness: 0.2, metalness: 0.4 });
+
+    const redGeo = new THREE.SphereGeometry(0.38, 12, 12);
+    const redUnitMat = new THREE.MeshStandardMaterial({ color: 0xef4444, roughness: 0.3, metalness: 0.3 });
+
+    // Spawn Blue Soldier from Cannon
+    function spawnBlueSoldier(xOffset = 0, zOffset = 0) {
+      const mesh = new THREE.Mesh(blueGeo, blueUnitMat);
+      mesh.position.set(
+        cannonGroup.position.x + xOffset + (Math.random() - 0.5) * 0.4,
+        0.38,
+        cannonGroup.position.z + 1.2 + zOffset
+      );
+      mesh.castShadow = true;
+      scene.add(mesh);
+
+      blueSoldiers.push({
+        mesh: mesh,
+        vx: (Math.random() - 0.5) * 0.4,
+        vz: 13.5,
+        alive: true,
+        passedGates: new Set()
+      });
+    }
+
+    // Spawn Red Asura from Horde
+    function spawnRedAsura(z) {
+      const mesh = new THREE.Mesh(redGeo, redUnitMat);
+      mesh.position.set(
+        (Math.random() - 0.5) * (roadWidth - 1.2),
+        0.38,
+        z
+      );
+      mesh.castShadow = true;
+      scene.add(mesh);
+
+      redEnemies.push({
+        mesh: mesh,
+        vz: -3.8, // Marching down towards the player!
+        alive: true
+      });
+    }
+
+    // Pre-populate dense Red Asura Horde in front of boss
+    function populateRedHorde() {
+      for (let z = 35; z < 64; z += 1.4) {
+        for (let i = 0; i < 6; i++) {
+          spawnRedAsura(z);
+        }
+      }
+    }
+    populateRedHorde();
+
+    // --- 8. Sudarshan Chakra 3D Projectile ---
     let activeChakra = null;
-    let lastTime = performance.now();
+    const chakraGeo = new THREE.CylinderGeometry(1.6, 1.6, 0.15, 24);
+    const chakraMat = new THREE.MeshStandardMaterial({
+      color: 0xfacc15,
+      emissive: 0xfacc15,
+      emissiveIntensity: 0.8,
+      metalness: 0.9,
+      roughness: 0.1
+    });
 
-    let isDragging = false;
-    let lastTouchX = 0;
+    function launchSudarshanChakra() {
+      if (activeChakra) return;
+      const mesh = new THREE.Mesh(chakraGeo, chakraMat);
+      mesh.position.set(cannonGroup.position.x, 0.8, cannonGroup.position.z + 1.5);
+      scene.add(mesh);
 
-    function handlePointerDown(e) {
-      if (gameState !== 'RUNNING' && gameState !== 'BOSS') return;
-      isDragging = true;
-      lastTouchX = e.clientX || (e.touches && e.touches[0].clientX);
-      sound.ensureContext();
-      sound.startCelestialDrone();
+      activeChakra = {
+        mesh: mesh,
+        vz: 38.0,
+        alive: true
+      };
+
+      audio.playChakra();
+      if (navigator.vibrate) navigator.vibrate([40, 80, 120]);
     }
 
-    function handlePointerMove(e) {
-      if (!isDragging) return;
-      const clientX = e.clientX || (e.touches && e.touches[0].clientX);
-      const deltaX = (clientX - lastTouchX) / screenWidth;
-      playerX += deltaX * 2.8;
-      playerX = Math.max(-0.85, Math.min(0.85, playerX));
-      lastTouchX = clientX;
+    // --- 9. Touch Drag Steering & Shooting ---
+    let playerTargetX = 0;
+    let isFiring = true;
+    let fireTimer = 0;
+    const FIRE_INTERVAL = 0.14; // Continuous rapid-fire streaming!
+
+    let isTouching = false;
+    let lastClientX = 0;
+
+    function onPointerDown(e) {
+      isTouching = true;
+      lastClientX = e.clientX || (e.touches && e.touches[0].clientX);
+      audio.resume();
     }
 
-    function handlePointerUp() {
-      isDragging = false;
+    function onPointerMove(e) {
+      if (!isTouching) return;
+      const x = e.clientX || (e.touches && e.touches[0].clientX);
+      const deltaX = (x - lastClientX) / window.innerWidth;
+      playerTargetX += deltaX * (roadWidth * 1.4);
+      playerTargetX = Math.max(-roadWidth / 2 + 1.2, Math.min(roadWidth / 2 - 1.2, playerTargetX));
+      lastClientX = x;
     }
 
-    window.addEventListener('mousedown', handlePointerDown);
-    window.addEventListener('mousemove', handlePointerMove);
-    window.addEventListener('mouseup', handlePointerUp);
-    window.addEventListener('touchstart', handlePointerDown, { passive: true });
-    window.addEventListener('touchmove', handlePointerMove, { passive: true });
-    window.addEventListener('touchend', handlePointerUp, { passive: true });
-
-    function project(x, y, z) {
-      const relZ = z - playerZ;
-      if (relZ <= 0.2) return null;
-
-      const fov = 400;
-      const scale = fov / (relZ + 10);
-      const screenX = screenWidth / 2 + (x * 45) * scale;
-      const screenY = screenHeight * 0.65 - ((y - 1.2) * 45) * scale;
-
-      return { x: screenX, y: screenY, scale: scale, relZ: relZ };
+    function onPointerUp() {
+      isTouching = false;
     }
 
-    function startLevel(lvlIndex) {
-      const blueprint = Levels[lvlIndex - 1] || Levels[0];
-      currentLevel = JSON.parse(JSON.stringify(blueprint));
-      playerZ = 0;
-      playerX = 0;
-      crowdCount = currentLevel.startCrowd;
-      bossMaxHp = currentLevel.boss.maxHp;
-      bossCurrentHp = bossMaxHp;
-      chakraCooldownTimer = 0;
-      activeChakra = null;
+    window.addEventListener('mousedown', onPointerDown);
+    window.addEventListener('mousemove', onPointerMove);
+    window.addEventListener('mouseup', onPointerUp);
+    window.addEventListener('touchstart', onPointerDown, { passive: true });
+    window.addEventListener('touchmove', onPointerMove, { passive: true });
+    window.addEventListener('touchend', onPointerUp, { passive: true });
 
-      gameState = 'RUNNING';
+    // --- 10. Main Game State & Loop ---
+    let gameState = 'MENU'; // 'MENU', 'PLAYING', 'VICTORY', 'DEFEAT'
+    let coins = 0;
+    let chakraCooldown = 0;
+    const CHAKRA_COOLDOWN_TIME = 8.0;
+
+    const armyCountLabel = document.getElementById('armyCountLabel');
+    const coinsLabel = document.getElementById('coinsLabel');
+    const progressBarFill = document.getElementById('progressBarFill');
+    const progressPctText = document.getElementById('progressPctText');
+
+    let clock = new THREE.Clock();
+
+    function animate() {
+      requestAnimationFrame(animate);
+
+      const dt = Math.min(clock.getDelta(), 0.1);
+      const time = clock.getElapsedTime();
+
+      if (gameState === 'PLAYING') {
+        // 1. Smooth cannon steering
+        cannonGroup.position.x += (playerTargetX - cannonGroup.position.x) * 14 * dt;
+        pedestal.rotation.y += 2.0 * dt;
+
+        // 2. Continuous Rapid Fire
+        fireTimer += dt;
+        if (fireTimer >= FIRE_INTERVAL) {
+          fireTimer = 0;
+          spawnBlueSoldier();
+          audio.playShoot();
+          // Cannon recoil bounce
+          cannonBarrel.position.z = 0.15;
+        }
+        cannonBarrel.position.z += (0.4 - cannonBarrel.position.z) * 12 * dt;
+
+        // 3. Oscillating Gates
+        gateRows.forEach(row => {
+          if (row.oscSpeed > 0 && row.mesh) {
+            row.mesh.position.x = Math.sin(time * row.oscSpeed) * row.amplitude;
+          }
+        });
+
+        // 4. Update Blue Soldiers & Multiplier Gates
+        for (let i = blueSoldiers.length - 1; i >= 0; i--) {
+          const s = blueSoldiers[i];
+          s.mesh.position.z += s.vz * dt;
+          s.mesh.position.x += s.vx * dt;
+
+          // Gate Crossing Check
+          gateRows.forEach((row, rIdx) => {
+            if (!s.passedGates.has(rIdx) && Math.abs(s.mesh.position.z - row.z) < 0.6) {
+              s.passedGates.add(rIdx);
+
+              // Determine left or right arch
+              const archX = s.mesh.position.x - (row.mesh ? row.mesh.position.x : 0);
+              const isLeft = archX < 0;
+              const gateData = isLeft ? row.left : row.right;
+
+              // Duplicate army!
+              if (gateData.type === 'mult') {
+                const countToSpawn = Math.min(gateData.val - 1, 15);
+                for (let k = 0; k < countToSpawn; k++) {
+                  spawnBlueSoldier(
+                    (Math.random() - 0.5) * 0.8,
+                    s.mesh.position.z - cannonGroup.position.z
+                  );
+                }
+              } else if (gateData.type === 'add') {
+                for (let k = 0; k < Math.min(gateData.val, 10); k++) {
+                  spawnBlueSoldier(
+                    (Math.random() - 0.5) * 0.8,
+                    s.mesh.position.z - cannonGroup.position.z
+                  );
+                }
+              }
+
+              audio.playGateChime(gateData.val);
+            }
+          });
+
+          // Check Clashing with Red Asuras (Tug of War physics)
+          for (let j = redEnemies.length - 1; j >= 0; j--) {
+            const r = redEnemies[j];
+            const dist = s.mesh.position.distanceTo(r.mesh.position);
+            if (dist < 0.8) {
+              // Destroy both units in clash
+              scene.remove(s.mesh);
+              scene.remove(r.mesh);
+              blueSoldiers.splice(i, 1);
+              redEnemies.splice(j, 1);
+              coins += 1;
+              coinsLabel.innerText = coins;
+              audio.playPop();
+              break;
+            }
+          }
+
+          // Check Pelting the Boss
+          if (s.alive && Math.abs(s.mesh.position.z - bossGroup.position.z) < 2.0 &&
+              Math.abs(s.mesh.position.x - bossGroup.position.x) < 2.5) {
+            scene.remove(s.mesh);
+            blueSoldiers.splice(i, 1);
+            bossCurrentHp -= 12;
+            updateBossHpUI();
+            audio.playPop();
+
+            if (bossCurrentHp <= 0) {
+              triggerVictory();
+              return;
+            }
+          }
+
+          // Remove if too far
+          if (s.mesh.position.z > 75) {
+            scene.remove(s.mesh);
+            blueSoldiers.splice(i, 1);
+          }
+        }
+
+        // 5. Update Red Asuras marching down
+        for (let j = redEnemies.length - 1; j >= 0; j--) {
+          const r = redEnemies[j];
+          r.mesh.position.z += r.vz * dt;
+
+          // If Asuras reach the Cannon -> DEFEAT!
+          if (r.mesh.position.z <= cannonGroup.position.z + 0.5) {
+            triggerDefeat();
+            return;
+          }
+        }
+
+        // 6. Boss March
+        if (bossCurrentHp > 0) {
+          bossGroup.position.z -= 0.8 * dt; // Slowly marching down!
+          hammerHandle.rotation.x = Math.PI / 6 + Math.sin(time * 3) * 0.2;
+
+          if (bossGroup.position.z <= cannonGroup.position.z + 2.0) {
+            triggerDefeat();
+            return;
+          }
+        }
+
+        // 7. Sudarshan Chakra Projectile
+        if (activeChakra) {
+          activeChakra.mesh.position.z += activeChakra.vz * dt;
+          activeChakra.mesh.rotation.y += 25 * dt;
+
+          // Annihilate any red asuras in wide radius
+          for (let j = redEnemies.length - 1; j >= 0; j--) {
+            const r = redEnemies[j];
+            if (Math.abs(activeChakra.mesh.position.z - r.mesh.position.z) < 2.5 &&
+                Math.abs(activeChakra.mesh.position.x - r.mesh.position.x) < 3.0) {
+              scene.remove(r.mesh);
+              redEnemies.splice(j, 1);
+              coins += 2;
+              coinsLabel.innerText = coins;
+            }
+          }
+
+          // Smash Boss
+          if (Math.abs(activeChakra.mesh.position.z - bossGroup.position.z) < 3.0) {
+            bossCurrentHp -= 250;
+            updateBossHpUI();
+            scene.remove(activeChakra.mesh);
+            activeChakra = null;
+
+            if (bossCurrentHp <= 0) {
+              triggerVictory();
+              return;
+            }
+          } else if (activeChakra.mesh.position.z > 80) {
+            scene.remove(activeChakra.mesh);
+            activeChakra = null;
+          }
+        }
+
+        // 8. Cooldown & UI
+        if (chakraCooldown > 0) {
+          chakraCooldown -= dt;
+          document.getElementById('chakraCooldownMask').classList.remove('hidden');
+          document.getElementById('chakraCooldownSec').innerText = Math.ceil(chakraCooldown) + 's';
+        } else {
+          document.getElementById('chakraCooldownMask').classList.add('hidden');
+        }
+
+        armyCountLabel.innerText = blueSoldiers.length;
+
+        // Progress based on boss HP defeated
+        const progress = Math.min(100, Math.floor(((bossMaxHp - bossCurrentHp) / bossMaxHp) * 100));
+        progressBarFill.style.width = progress + '%';
+        progressPctText.innerText = progress + '%';
+      }
+
+      renderer.render(scene, camera);
+    }
+    animate();
+
+    function startGame() {
+      gameState = 'PLAYING';
       document.getElementById('mainMenuModal').classList.add('hidden');
       document.getElementById('victoryModal').classList.add('hidden');
       document.getElementById('defeatModal').classList.add('hidden');
-      document.getElementById('bossBarContainer').classList.add('hidden');
-      document.getElementById('levelNameBadge').innerText = currentLevel.name;
-      document.getElementById('coinsText').innerText = SaveState.coins;
-
-      sound.ensureContext();
-      sound.startCelestialDrone();
-    }
-
-    function activateSudarshanChakra() {
-      if (chakraCooldownTimer > 0 || (gameState !== 'RUNNING' && gameState !== 'BOSS')) return;
-
-      chakraCooldownTimer = CHAKRA_COOLDOWN;
-      activeChakra = {
-        z: playerZ + 2,
-        x: playerX,
-        speed: 38.0,
-        active: true
-      };
-
-      sound.playChakraSound();
-
-      const flash = document.getElementById('flashOverlay');
-      flash.style.opacity = '0.4';
-      setTimeout(() => { flash.style.opacity = '0'; }, 200);
-
-      if (navigator.vibrate) navigator.vibrate([40, 60, 80]);
-    }
-
-    document.getElementById('chakraAbilityBtn').addEventListener('click', activateSudarshanChakra);
-
-    function gameLoop(now) {
-      requestAnimationFrame(gameLoop);
-
-      const dt = Math.min((now - lastTime) / 1000, 0.1);
-      lastTime = now;
-
-      if (gameState === 'RUNNING') {
-        playerZ += forwardSpeed * dt;
-
-        const progress = Math.min(1, playerZ / currentLevel.length);
-        document.getElementById('progressBarFill').style.width = (progress * 100) + '%';
-        document.getElementById('progressPercentText').innerText = Math.floor(progress * 100) + '%';
-
-        for (const gate of currentLevel.gates) {
-          if (!gate.activated && playerZ >= gate.z - 1.5 && playerZ <= gate.z + 2.5) {
-            gate.activated = true;
-            const chosen = playerX < 0 ? gate.left : gate.right;
-            if (chosen.type === 'mult') {
-              crowdCount = Math.floor(crowdCount * chosen.val);
-            } else if (chosen.type === 'add') {
-              crowdCount += chosen.val;
-            } else if (chosen.type === 'pen') {
-              crowdCount = Math.max(0, crowdCount - chosen.val);
-            }
-
-            sound.playGateSound(chosen.type, chosen.val);
-            if (navigator.vibrate) navigator.vibrate(50);
-
-            if (crowdCount <= 0) triggerDefeat();
-          }
-        }
-
-        for (const squad of currentLevel.enemies) {
-          if (squad.count > 0 && Math.abs(playerZ - squad.z) < 2.5) {
-            const damage = crowdCount * 12 * dt;
-            squad.hp -= damage;
-            if (squad.hp <= 0) {
-              squad.count = 0;
-              SaveState.coins += 5;
-              document.getElementById('coinsText').innerText = SaveState.coins;
-              sound.playImpactSound();
-            } else {
-              const lost = Math.floor(dt * 6);
-              crowdCount = Math.max(0, crowdCount - lost);
-              if (crowdCount <= 0) triggerDefeat();
-            }
-          }
-        }
-
-        if (playerZ >= currentLevel.length) {
-          gameState = 'BOSS';
-          sound.playBossRoar();
-          document.getElementById('bossBarContainer').classList.remove('hidden');
-          document.getElementById('bossNameLabel').innerText = `👹 ${currentLevel.boss.name}`;
-        }
-      } else if (gameState === 'BOSS') {
-        const armyDps = crowdCount * 14 * dt;
-        bossCurrentHp -= armyDps;
-        bossCurrentHp = Math.max(0, bossCurrentHp);
-
-        const bossHpPct = Math.floor((bossCurrentHp / bossMaxHp) * 100);
-        document.getElementById('bossHpFill').style.width = bossHpPct + '%';
-        document.getElementById('bossHpPercent').innerText = bossHpPct + '%';
-
-        crowdCount -= Math.floor(dt * 4);
-        crowdCount = Math.max(0, crowdCount);
-
-        if (bossCurrentHp <= 0) {
-          triggerVictory();
-        } else if (crowdCount <= 0) {
-          triggerDefeat();
-        }
-      }
-
-      if (activeChakra && activeChakra.active) {
-        activeChakra.z += activeChakra.speed * dt;
-
-        if (currentLevel) {
-          for (const squad of currentLevel.enemies) {
-            if (squad.count > 0 && Math.abs(activeChakra.z - squad.z) < 4) {
-              squad.hp -= 150;
-              if (squad.hp <= 0) {
-                squad.count = 0;
-                SaveState.coins += 8;
-                document.getElementById('coinsText').innerText = SaveState.coins;
-              }
-            }
-          }
-
-          if (gameState === 'BOSS' && activeChakra.z >= currentLevel.length + 5) {
-            bossCurrentHp -= 120;
-            sound.playImpactSound();
-            activeChakra.active = false;
-          }
-        }
-
-        if (activeChakra.z > playerZ + 80) activeChakra.active = false;
-      }
-
-      if (chakraCooldownTimer > 0) {
-        chakraCooldownTimer -= dt;
-        document.getElementById('chakraCooldownMask').classList.remove('hidden');
-        document.getElementById('chakraCooldownSecs').innerText = Math.ceil(chakraCooldownTimer) + 's';
-      } else {
-        document.getElementById('chakraCooldownMask').classList.add('hidden');
-      }
-
-      document.getElementById('soldierCountText').innerText = crowdCount;
-      renderScene();
+      bossCurrentHp = bossMaxHp;
+      updateBossHpUI();
+      bossGroup.position.z = 65;
+      audio.resume();
     }
 
     function triggerVictory() {
       gameState = 'VICTORY';
-      sound.stopCelestialDrone();
-      SaveState.coins += currentLevel.boss.reward;
-      if (currentLevel.id >= SaveState.highestUnlocked && SaveState.highestUnlocked < 3) {
-        SaveState.highestUnlocked = currentLevel.id + 1;
-      }
-      SaveState.save();
-
-      document.getElementById('victoryArmyCount').innerText = crowdCount;
-      document.getElementById('victoryCoinsReward').innerText = `+${currentLevel.boss.reward} 🪙`;
+      coins += 100;
+      coinsLabel.innerText = coins;
+      document.getElementById('victoryCountTxt').innerText = blueSoldiers.length + '+';
       document.getElementById('victoryModal').classList.remove('hidden');
-      document.getElementById('coinsText').innerText = SaveState.coins;
-      updateMenuButtons();
+      audio.playVictory();
     }
 
     function triggerDefeat() {
       gameState = 'DEFEAT';
-      sound.stopCelestialDrone();
       document.getElementById('defeatModal').classList.remove('hidden');
     }
 
-    function renderScene() {
-      ctx.clearRect(0, 0, screenWidth, screenHeight);
-
-      if (!currentLevel) {
-        ctx.fillStyle = '#090d16';
-        ctx.fillRect(0, 0, screenWidth, screenHeight);
-        return;
-      }
-
-      const skyGrad = ctx.createLinearGradient(0, 0, 0, screenHeight * 0.65);
-      skyGrad.addColorStop(0, '#0a192f');
-      skyGrad.addColorStop(1, currentLevel.fogColor);
-      ctx.fillStyle = skyGrad;
-      ctx.fillRect(0, 0, screenWidth, screenHeight * 0.65);
-
-      ctx.fillStyle = currentLevel.groundColor;
-      ctx.fillRect(0, screenHeight * 0.65, screenWidth, screenHeight * 0.35);
-
-      const trackWidth = 3.8;
-      const roadSteps = 30;
-      for (let i = 0; i < roadSteps; i++) {
-        const z1 = playerZ + i * 3.5;
-        const z2 = z1 + 3.5;
-
-        const p1L = project(-trackWidth, 0, z1);
-        const p1R = project(trackWidth, 0, z1);
-        const p2L = project(-trackWidth, 0, z2);
-        const p2R = project(trackWidth, 0, z2);
-
-        if (p1L && p1R && p2L && p2R) {
-          ctx.beginPath();
-          ctx.moveTo(p1L.x, p1L.y);
-          ctx.lineTo(p1R.x, p1R.y);
-          ctx.lineTo(p2R.x, p2R.y);
-          ctx.lineTo(p2L.x, p2L.y);
-          ctx.closePath();
-
-          ctx.fillStyle = (i % 2 === 0) ? currentLevel.trackColor : '#d1b275';
-          ctx.fill();
-
-          const p1M = project(0, 0, z1);
-          const p2M = project(0, 0, z2);
-          if (p1M && p2M && i % 2 === 0) {
-            ctx.beginPath();
-            ctx.moveTo(p1M.x, p1M.y);
-            ctx.lineTo(p2M.x, p2M.y);
-            ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
-            ctx.lineWidth = 2 * p1M.scale;
-            ctx.stroke();
-          }
-        }
-      }
-
-      for (const gate of currentLevel.gates) {
-        if (gate.z > playerZ - 2 && gate.z < playerZ + 75) renderGateRow(gate);
-      }
-
-      for (const squad of currentLevel.enemies) {
-        if (squad.count > 0 && squad.z > playerZ - 2 && squad.z < playerZ + 75) renderEnemySquad(squad);
-      }
-
-      if (playerZ >= currentLevel.length - 25) renderBoss();
-
-      if (activeChakra && activeChakra.active) renderChakraProjectile(activeChakra);
-
-      renderDivineArmy();
-    }
-
-    function renderGateRow(gate) {
-      const z = gate.z;
-      const leftGateCenter = project(-1.8, 1.5, z);
-      const rightGateCenter = project(1.8, 1.5, z);
-      const gateCenter = project(0, 0, z);
-      if (!gateCenter) return;
-
-      const scale = gateCenter.scale;
-      const gateW = 75 * scale;
-      const gateH = 90 * scale;
-
-      drawGateArch(leftGateCenter, gate.left, gateW, gateH, gate.activated);
-      drawGateArch(rightGateCenter, gate.right, gateW, gateH, gate.activated);
-    }
-
-    function drawGateArch(pos, data, w, h, activated) {
-      if (!pos) return;
-
-      ctx.save();
-      ctx.translate(pos.x, pos.y);
-
-      let gateColor = data.type === 'mult' ? '#ffb300' : (data.type === 'add' ? '#00e5ff' : '#ff1744');
-      if (activated) gateColor = 'rgba(100, 100, 100, 0.4)';
-
-      ctx.fillStyle = gateColor;
-      ctx.globalAlpha = activated ? 0.3 : 0.75;
-      ctx.fillRect(-w/2, -h/2, w, h);
-
-      ctx.strokeStyle = '#ffffff';
-      ctx.lineWidth = 3;
-      ctx.strokeRect(-w/2, -h/2, w, h);
-
-      ctx.fillStyle = '#ffffff';
-      ctx.font = `bold ${Math.max(12, Math.floor(22 * pos.scale))}px system-ui`;
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      const label = data.type === 'mult' ? `×${data.val}` : (data.type === 'add' ? `+${data.val}` : `-${data.val}`);
-      ctx.fillText(label, 0, 0);
-
-      ctx.restore();
-    }
-
-    function renderDivineArmy() {
-      const krishnaPos = project(playerX * 3.0, 0.4, playerZ + 2.5);
-      if (krishnaPos) drawKrishna(krishnaPos.x, krishnaPos.y, krishnaPos.scale);
-
-      const count = Math.min(crowdCount, 120);
-      const goldenAngle = 2.39996;
-      for (let i = 0; i < count; i++) {
-        const radius = 0.28 * Math.sqrt(i);
-        const angle = i * goldenAngle;
-        const offsetX = radius * Math.cos(angle) + (playerX * 3.0);
-        const offsetZ = -radius * Math.sin(angle) + playerZ + 1.2;
-
-        const pos = project(offsetX, 0.25, offsetZ);
-        if (pos) drawSoldier(pos.x, pos.y, pos.scale);
-      }
-    }
-
-    function drawKrishna(x, y, scale) {
-      const r = Math.max(7, 14 * scale);
-      ctx.save();
-      ctx.translate(x, y);
-
-      ctx.beginPath();
-      ctx.arc(0, -r * 1.2, r * 1.5, 0, Math.PI * 2);
-      ctx.fillStyle = 'rgba(255, 215, 0, 0.35)';
-      ctx.fill();
-
-      ctx.beginPath();
-      ctx.arc(0, r * 0.4, r * 0.9, 0, Math.PI);
-      ctx.fillStyle = '#ffd700';
-      ctx.fill();
-
-      ctx.beginPath();
-      ctx.arc(0, -r * 0.5, r * 0.7, 0, Math.PI * 2);
-      ctx.fillStyle = '#1e88e5';
-      ctx.fill();
-
-      ctx.fillStyle = '#ffb300';
-      ctx.fillRect(-r * 0.5, -r * 1.5, r, r * 0.5);
-      ctx.beginPath();
-      ctx.arc(0, -r * 1.8, r * 0.4, 0, Math.PI * 2);
-      ctx.fillStyle = '#00e676';
-      ctx.fill();
-
-      ctx.restore();
-    }
-
-    function drawSoldier(x, y, scale) {
-      const r = Math.max(3, 7 * scale);
-      ctx.beginPath();
-      ctx.arc(x, y, r, 0, Math.PI * 2);
-      ctx.fillStyle = '#29b6f6';
-      ctx.fill();
-      ctx.strokeStyle = '#0288d1';
-      ctx.lineWidth = 1;
-      ctx.stroke();
-    }
-
-    function renderEnemySquad(squad) {
-      for (let i = 0; i < squad.count; i++) {
-        const xOffset = ((i % 4) - 1.5) * 1.4;
-        const zOffset = squad.z + Math.floor(i / 4) * 1.6;
-
-        const pos = project(xOffset, 0.3, zOffset);
-        if (pos) {
-          const r = Math.max(4, 9 * pos.scale);
-          ctx.beginPath();
-          ctx.arc(pos.x, pos.y, r, 0, Math.PI * 2);
-          ctx.fillStyle = (squad.type === 'asura') ? '#880e4f' : '#b71c1c';
-          ctx.fill();
-
-          ctx.fillStyle = '#ff8f00';
-          ctx.fillRect(pos.x - r * 0.6, pos.y - r * 1.2, r * 0.3, r * 0.5);
-          ctx.fillRect(pos.x + r * 0.3, pos.y - r * 1.2, r * 0.3, r * 0.5);
-        }
-      }
-    }
-
-    function renderBoss() {
-      const bossZ = currentLevel.length + 10;
-      const pos = project(0, 1.8, bossZ);
-      if (!pos) return;
-
-      const scale = pos.scale;
-      const w = 90 * scale;
-      const h = 130 * scale;
-
-      ctx.save();
-      ctx.translate(pos.x, pos.y);
-
-      ctx.fillStyle = currentLevel.boss.color;
-      ctx.beginPath();
-      ctx.ellipse(0, 0, w/2, h/2, 0, 0, Math.PI * 2);
-      ctx.fill();
-
-      ctx.fillStyle = '#ffeb3b';
-      ctx.beginPath();
-      ctx.arc(-w * 0.2, -h * 0.2, 5 * scale, 0, Math.PI * 2);
-      ctx.arc(w * 0.2, -h * 0.2, 5 * scale, 0, Math.PI * 2);
-      ctx.fill();
-
-      ctx.restore();
-    }
-
-    function renderChakraProjectile(chakra) {
-      const pos = project(chakra.x * 3.0, 0.6, chakra.z);
-      if (!pos) return;
-
-      const r = Math.max(8, 25 * pos.scale);
-      ctx.save();
-      ctx.translate(pos.x, pos.y);
-      ctx.rotate(Date.now() * 0.02);
-
-      ctx.beginPath();
-      ctx.arc(0, 0, r, 0, Math.PI * 2);
-      ctx.fillStyle = 'rgba(255, 215, 0, 0.85)';
-      ctx.fill();
-      ctx.strokeStyle = '#fff';
-      ctx.lineWidth = 3;
-      ctx.stroke();
-
-      ctx.restore();
-    }
-
-    function updateMenuButtons() {
-      const l2 = document.getElementById('level2Btn');
-      const l3 = document.getElementById('level3Btn');
-      const l2Badge = document.getElementById('level2LockBadge');
-      const l3Badge = document.getElementById('level3LockBadge');
-
-      if (SaveState.highestUnlocked >= 2) {
-        l2.style.background = 'linear-gradient(90deg, #059669, #0d9488)';
-        l2.style.color = '#ffffff';
-        l2Badge.innerText = '⚔️ Play';
-      }
-      if (SaveState.highestUnlocked >= 3) {
-        l3.style.background = 'linear-gradient(90deg, #7c3aed, #4f46e5)';
-        l3.style.color = '#ffffff';
-        l3Badge.innerText = '⚔️ Play';
-      }
-    }
-    updateMenuButtons();
-
-    document.getElementById('level1Btn').addEventListener('click', () => startLevel(1));
-    document.getElementById('level2Btn').addEventListener('click', () => {
-      if (SaveState.highestUnlocked >= 2) startLevel(2);
-    });
-    document.getElementById('level3Btn').addEventListener('click', () => {
-      if (SaveState.highestUnlocked >= 3) startLevel(3);
-    });
-
+    document.getElementById('playBtn').addEventListener('click', startGame);
     document.getElementById('nextLevelBtn').addEventListener('click', () => {
-      if (currentLevel.id < 3) startLevel(currentLevel.id + 1);
-      else startLevel(1);
+      // Level 2 upgrade
+      bossMaxHp = 1200;
+      populateRedHorde();
+      startGame();
     });
-    document.getElementById('victoryReplayBtn').addEventListener('click', () => startLevel(currentLevel.id));
-    document.getElementById('defeatRetryBtn').addEventListener('click', () => startLevel(currentLevel.id));
-    document.getElementById('defeatMenuBtn').addEventListener('click', () => {
+    document.getElementById('replayBtn').addEventListener('click', () => {
+      populateRedHorde();
+      startGame();
+    });
+    document.getElementById('retryBtn').addEventListener('click', () => {
+      populateRedHorde();
+      startGame();
+    });
+    document.getElementById('menuBtn').addEventListener('click', () => {
       document.getElementById('defeatModal').classList.add('hidden');
       document.getElementById('mainMenuModal').classList.remove('hidden');
       gameState = 'MENU';
     });
 
-    document.getElementById('pauseBtn').addEventListener('click', () => {
-      if (gameState === 'RUNNING' || gameState === 'BOSS') {
-        gameState = 'PAUSED';
-        sound.stopCelestialDrone();
-        alert("Game Paused. Tap OK to resume.");
-        gameState = 'RUNNING';
-        sound.startCelestialDrone();
+    document.getElementById('chakraBtn').addEventListener('click', () => {
+      if (chakraCooldown <= 0 && gameState === 'PLAYING') {
+        chakraCooldown = CHAKRA_COOLDOWN_TIME;
+        launchSudarshanChakra();
       }
     });
 
-    requestAnimationFrame(gameLoop);
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
   </script>
 </body>
 </html>
